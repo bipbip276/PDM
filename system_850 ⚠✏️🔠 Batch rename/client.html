@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Batch Rename</title> 
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E⚠✏️🔠%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+        <style>
+			body{margin:50px 10px;padding:0px;font:normal 12px arial;}
+            pre{border:0;margin:0;padding:0;}
+            pre{padding:0.25em 0.5em;}
+		</style>
+		<script>
+			window.onload=function (){
+                desimulate();
+			}
+            function simulate(){
+                var filter_value=document.getElementById("filter_input").value;
+                var replacement_value=document.getElementById("replacement_input").value;
+                var url='?action=simulate&filter_value='+btoa(filter_value)+'&replacement_value='+btoa(replacement_value);
+                var req = new XMLHttpRequest();
+                req.open('GET',url, true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){console.log(req.responseText+ '?');
+                            var results=JSON.parse(req.responseText);
+                            console.log(results);
+                            if(results.filter_valid==false){
+                                document.getElementById('filter_input').style.color='red';
+                            }
+                            else{
+                                document.getElementById('filter_input').style.color='black';
+                            }
+                            var arr= results.files;
+                            var i;
+                            var html="";
+                            var conflicts=false;
+                            for (i = 0; i < arr.length; i++) {
+                                switch(arr[i].conflict){
+                                    case 'nvalid':html=html+"<tr><td style='background:lightGrey;'>"+text2html(arr[i].name)+"</td><td></td><td style='background:blue;'>"+text2html(arr[i].rename)+"</td></tr>";conflicts=true;break;
+                                    case 'exists':html=html+"<tr><td style='background:lightGrey;'>"+text2html(arr[i].name)+"</td><td></td><td style='background:red;'>"+text2html(arr[i].rename)+"</td></tr>";conflicts=true;break;
+                                    case 'sameas':html=html+"<tr><td style='background:lightGrey;'>"+text2html(arr[i].name)+"</td><td></td><td style='background:yellow;'>"+text2html(arr[i].rename)+"</td></tr>";conflicts=true;break;
+                                    default:      html=html+"<tr><td style='background:lightGrey;'>"+text2html(arr[i].name)+"</td><td></td><td style='background:lightGreen;'>"+text2html(arr[i].rename)+"</td></tr>";break;
+                                }
+                            }
+                            document.getElementById('results').innerHTML=html;
+                            if(conflicts===false && results.filter_valid===true && results.files.length>0){
+                                document.getElementById('save').disabled=false;
+                                document.getElementById('save').style.fontWeight='bold';
+                                document.getElementById('save').style.color='red';
+                            }
+                        }
+                        else{//html-level errors
+                            if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}
+                        }
+                    }
+                }
+                req.send(null);
+            }
+            function desimulate(){
+                document.getElementById('save').disabled=true;
+                document.getElementById('save').style.fontWeight='normal';
+                document.getElementById('save').style.color='grey';
+            }
+            function save(){
+                if(confirm('Rename files?')){
+                    var filter_value=document.getElementById("filter_input").value;
+                    var replacement_value=document.getElementById("replacement_input").value;
+                    var url='?action=save&filter_value='+btoa(filter_value)+'&replacement_value='+btoa(replacement_value);
+                    var req = new XMLHttpRequest();
+                    req.open('GET',url, true);
+                    req.onreadystatechange = function () {
+                        if(req.readyState==4){
+                            if(req.status==200){
+                                console.log(req);
+                                alert(req.responseText);
+                                location.reload();
+                            }
+                            else{//html-level errors
+                                if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}
+                            }
+                        }
+                    }
+                    req.send(null);
+                }
+            }
+            //libs
+            function text2html(text){
+                var encodedText = text.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {return '&#'+i.charCodeAt(0)+';';});
+                return '<pre>'+encodedText+'</pre>';
+            }
+		</script>
+	</head>
+	<body>
+        <h1 style="width: 800px;margin: auto ;text-align:center;width:100%;">Rename files (SUPER)</h1>
+		<table style="width: 80%; min-width: 600px;max-width: 1000px;margin:0 auto 100px auto ;">
+			<tr>
+                <td colspan="3" style="text-align:justify;padding:30px 0 60px 0;">
+                    <p>
+                        This plugin allows you to batch-rename archived files. It edits archived files. It therefore breaks archives liability and is a SUPER function.
+                        In the simulated output,
+                        <ul>
+                            <li><span style='background-color:yellow'>&nbsp;&nbsp;&nbsp;</span> A yellow line  indicate that the new name conflicts with another renamed file</li>
+                            <li><span style='background-color:red'>&nbsp;&nbsp;&nbsp;</span> A red line indicates that the new name conflicts with an existing file</li>
+                            <li><span style='background-color:blue'>&nbsp;&nbsp;&nbsp;</span> A blue line in blue indicates that the new name is not valid (length&lt;0, length&gt;256, contains a forbidden character or starts with '.')</li>
+                        </ul>
+                    </p>
+                    <p>
+                        From a technical standpoint, this tool uses <a href="https://regex101.com/" target="_blank">PCRE-compliant regex</a> (i.e. PHP). It is case-sensitive.
+                    </p>
+                    <p>
+                        <a href='#' onclick="if(document.getElementById('scratchpad').style.display!=='none'){document.getElementById('scratchpad').style.display='none'}else{document.getElementById('scratchpad').style.display='block';}">Examples</a>
+                    </p>
+                    <table id="scratchpad" style="width:100%;display:none;background-color:lightGrey;border:1px solid black;">
+                        <thead style="font-weight:bold">
+                            <tr>
+                                <td></td>
+                                <td>FILTER</td>
+                                <td>REPLACEMENT</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>To list all files</td>
+                                <td><pre>.*</pre></td>
+                                <td><pre></pre></td>
+                            </tr>
+                            <tr>
+                                <td>To change a part of the string</td>
+                                <td><pre>oldtext</pre></td>
+                                <td><pre>newtext</pre></td>
+                            </tr>
+                            <tr>
+                                <td>remove double spaces</td>
+                                <td><pre>  </pre></td>
+                                <td><pre> </pre></td>
+                            </tr>
+                            <tr>
+                                <td>remove part of a string</td>
+                                <td><pre>^(.*parttokeep.*)parttoremove.pdf$</pre></td>
+                                <td><pre>$1.pdf</pre></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+			</tr>
+			<tr style="font-size:18px;text-align:center;">
+                <td>
+                    Filter:
+                </td>
+                <td>
+                   &nbsp;
+                </td>
+                <td>
+                    Replacement:
+                </td>
+			</tr>
+			<tr style="font-size:18px;text-align:center;">
+                <td>
+                    <input id="filter_input" type='text' style="width:100%;" onchange="desimulate();" onkeyup="if(event.keyCode == 13){simulate();}else{desimulate();}" onpaste="desimulate();"\>
+                </td>
+                <td>
+                </td>
+                <td>
+                    <input id="replacement_input" type='text' style="width:100%;" onchange="desimulate();" onkeyup="if(event.keyCode == 13){simulate();}else{desimulate();}" onpaste="desimulate();"\>
+                </td>
+			</tr>
+			<tr style="font-size:24px;text-align:center;">
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                </td>
+                <td>
+                    <button id="simulate" onclick="simulate();">Simulate</button>
+                    <button id="save" style="color:red;" onclick="save();">Save</button>
+                </td>
+			</tr>
+            <tbody id='results'>
+            </tbody>
+		</table>
+
+	</body>
+</html>

@@ -1,0 +1,99 @@
+<html>
+  <head>
+<meta charset="UTF-8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E⚠%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+    <title></title>
+    <meta content="">
+    <style>
+        div{margin:1em;}
+    </style>
+		<script>
+			window.onload=function (){getURI();}
+            function getURI(){
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=getURI', true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            document.getElementById('URIInfo').innerHTML="Root Access to the ARCHIVES directory:<a href='"+req.responseText+"'>"+req.responseText+"</a>";
+                        }
+                        else{//html-level errors
+                            if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}
+                        }
+                    }
+                }
+                req.send(null);
+            }
+            function clearCache(){
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=clearCache', true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            alert(req.responseText);
+                        }
+                        else{//html-level errors
+                            if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}
+                        }
+                    }
+                }
+                req.send(null);
+            }
+            function getPassword(){
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=getPassword', true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            alert(req.responseText);
+                        }
+                        else{//html-level errors
+                            if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}
+                        }
+                    }
+                }
+                req.send(null);
+            }
+            function setPassword(){
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=setPassword&newPassword=undefined', true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            alert(req.responseText);
+                        }
+                        else{//html-level errors
+                            if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}
+                        }
+                    }
+                }
+                req.send(null);
+            }
+		</script>
+  </head>
+  <body>
+    <h1 style="color:red">⚠ With great power comes great responsibility</h1>
+    <div>
+        <table style="max-width:800px">
+            <tr>
+                <td style="width:100%" id='URIInfo'>Please wait...</td>
+                <td><button onclick="getPassword()">Show password</button></td>
+                <td><button onclick="setPassword()">Change password</button></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        Recommended applications:
+        <ul>
+            <li><b>File managers</b>: <a href='./editable/index.html' target='_editable'>Embedded Tool</a>, <a href='https://apps.kde.org/en/konqueror'>konqueror</a>, Dolphins, any other that can mount sftp...</li>
+            <li><b>Find duplicate files</b>: <a href='./duplicates/index.html' target='_duplicates'>Embedded Tool</a>, fdupes (<i>fdupes -d &lt;dir&gt;</i>), dupeGuru (GUI), FSlint(GUI)...</li>
+            <li><b>Batch rename files</b>: <a href='./rename/index.html' target='_rename'>Embedded Tool</a>, krename (GUI)</li>
+        </ul>
+    </div>
+    <br/>
+    <hr/>
+    <div>
+        <button onclick='clearCache()'>Click here to clear cache</button>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<title>Duplicates</title>
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E📑%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>
+			/*general*/
+			html,body{}
+			table{border-collapse:collapse;}
+			input{border:0;padding:0;background-color:transparent;}
+			input[type='text'],input[type='number'],textarea {}
+		</style>
+		<script>
+			window.onload=function(){
+                findDuplicate(function(duplicates){
+                    var html='<ul>';
+                    var html='';
+                    if(duplicates.length==0){html='<span style="font-size:2em;color:green">&#10004;</span> No duplicate files found';}
+                    else{
+                        for (var i = 0; i < duplicates.length; i++) {
+                            var hash = duplicates[i]['hash'];
+                            var files = duplicates[i]['files'];
+                            html=html+'<li>Hash: '+hash+'<ul>';
+                            for (var j = 0; j < files.length; j++) {
+                                html=html+'<li id='+i+'_'+j+'>File: <a href="?action=file_get&sourceReference='+encodeURIComponent(files[j])+'">'+files[j]+'</a> <button onclick="deleteFile('+i+','+j+')">delete</button></li>';
+                            }
+                            html=html+'</ul></li>';
+                        }
+                        html=html+'</ul>';
+                    }
+                    document.getElementById('content').innerHTML='<table>'+html+'</table>';
+                });
+			}
+
+			var duplicates=null;
+			function findDuplicate(callback){
+                var req=new XMLHttpRequest();
+                req.open('get','?action=check',true);
+                req.onload=function(){
+                    if(req.status===200){
+                        if(IsJsonString(req.responseText)){
+							duplicates = JSON.parse(req.responseText);
+                            callback(duplicates);
+                        }else{alert('not a json string: '+req.responseText);}
+                    }else{alert(req.responseText);}
+                }
+                req.send();
+            }
+			function deleteFile(hashCounter,fileCounter){
+                var req=new XMLHttpRequest();
+                console.log(duplicates);
+                var filereference=duplicates[hashCounter]['files'][fileCounter];
+                if(confirm("Delete file"+filereference+'?')){
+					req.open('get','?action=file_delete&filereference='+encodeURIComponent(filereference),true);
+					req.onload=function(){
+						if(req.status===200){
+							if(req.responseText.substr(0,2).toLowerCase()=='ok'){
+								console.log('file '+filereference+' deleted on the server');
+								document.getElementById(hashCounter+'_'+fileCounter).style.display='none';
+							}
+							else{alert(req.responseText);}
+						}else{alert(req.responseText);}
+					}
+					req.send();
+				}
+            }
+            function IsJsonString(str){//tests str for correct json
+                try {JSON.parse(str);}
+                catch (e) {return false;}
+                return true;
+            }
+            
+		</script>
+    </head>
+    <body style='width:95%;min-width:300px;margin: auto;'>
+        <H1 style='max-width:1200px;margin:3em auto 2em auto;'>📑 Duplicate Files Detection Tool</H1>
+        <ul style='max-width:1200px;margin:1em auto 3em auto;'>
+			<li>This script does not check empty files</li>
+			<li>Detection can take up to 10 minutes (on Timeout Error, just refresh the page, it will go faster after)</li>
+		</ul>
+        <div id='content' style='max-width:1200px;margin:3em auto;'><span id='wait'><style onload="this.parentElement.className='wait';" type="text/css" scoped>.wait{animation: blinker 1s linear infinite;} @keyframes blinker {50% {opacity: 0;}}</style>Searching for duplicate files (could be up to 10 minutes)</span></div>
+        <div id='close' style='max-width:1200px;margin:3em auto;text-align:center;'><input type='button' style='width:50% ;display:inline;font-size:1em;height:3em;background-color:limeGreen;color:white;cursor:pointer;border:0;margin:2em auto;border-radius:0.2em;' value="Close" onclick="window.open('','_self').close();"/></div>
+    </body>
+</html>

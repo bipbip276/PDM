@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta CHARSET="UTF-8">
+        <title>PDM Edit Archives</title>
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E⚠✏️🔠%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            *{scrollbar-width: none;/*hide scrollbars in ff*/}::-webkit-scrollbar{display:none;}/*hide scrollbars in blink*/
+            html{
+                font-family: "Times New Roman", Times, serif;/*default are not the same firefox / blink*/
+                font-size: 12pt;
+                padding:0;
+                height:100%;
+                text-align:center;
+                user-select: none;/*set the body envelopper not user-selectable, make sure this is after the  *{user-select: auto;} */
+                scroll-behavior: smooth;/*if the search field is focused, up/down arrows will not scroll. We therefore do by reassign this function with JS. This is to make it smooth natively*/
+            }
+            body{
+                max-width:900px;
+                margin:0 auto;
+            }
+			#filter{width:100%; margin:auto;font-size:1.5em;padding:0.5em;margin: 1em 0;}
+            
+            #VISILIST {padding-bottom:5em;margin:3em auto;width:100%;}
+            .file   { width:100%;table-layout: fixed;border-collapse:collapse;;border-radius:0.2em;background-color:lightGrey;margin:0.5em 0 0.5em 0;border:0px solid grey;box-shadow:0 1px 5px 0 rgba(0, 0, 0, 0.1);}
+            .file  td {vertical-align:middle;text-align:left;height:2em;cursor:pointer;}
+            .file_ref{text-align:left;padding: 0.5em;width:100%;overflow-wrap: break-word;text-overflow: ellipsis;}
+            .file_size{text-align:center;width:4.5em;margin:0;padding:0;}
+            .file_icon{display:inline-block;width:2em;}
+   
+        </style>
+        <script>
+
+            window.onload=function(){
+                console.clear();
+				SERVER_init();
+            }
+
+            // SERVER actions
+            function SERVER_init(){
+				var req = new XMLHttpRequest();
+				req.open('GET','?action=load',true);
+				req.onreadystatechange = function (){
+					if(req.readyState==XMLHttpRequest.DONE){
+						if(req.status==200){
+							try {var serverResponse=JSON.parse(req.responseText);}catch {alert('NOT ok: Error, server returned invalid string, check console.');console.log(req.responseText);var serverResponse=[];};
+							SERVER.ARCHIVES.files=serverResponse;
+                            SERVER_setFilter();
+                            VISILIST_init();
+							VISILIST_refresh();
+						}else{alert('!--- HTML level Error (code '+req.status+')');}
+					}
+				}
+				req.send(null);
+            }
+            function SERVER_renameFile(file,newHumanReference){
+                //file
+                // newReference should be in this human format: YYYY-MM-DDTHH:MM:ss.mmm name
+                // var date = new Date(Date.parse(newHumanReference.substring(0,newHumanReference.indexOf(" "))));
+                // var jsTime=date.getTime();
+                // if(isNaN(jsTime)){alert ('date not recognized');return null;}
+                // date=date.getTime().toString();
+                // if(date.charAt(0)==='-'){date='-'+('0000000000000'+date).slice(-13);}
+                // else{date=('00000000000000'+date).slice(-14)}
+                // var name = newHumanReference.substring(newHumanReference.indexOf(" ")+1);
+                var destinationReference=file.reference.slice(0,14)+' '+newHumanReference;
+				var req = new XMLHttpRequest();
+				req.open('GET','?action=edit_rename&sourceReference='+encodeURIComponent(file.reference)+'&destinationReference='+encodeURIComponent(destinationReference),true);
+				req.onreadystatechange = function (){
+					if(req.readyState==XMLHttpRequest.DONE){
+						if(req.status==200){
+							if(req.responseText.slice(0,2).toLowerCase()=='ok'){
+                                var f=function(a,b){return SERVER_FILE_getDate(b)-SERVER_FILE_getDate(a);};
+                                SERVER.ARCHIVES.files.push({reference:destinationReference,size:file.size});
+                                SERVER.ARCHIVES.files.splice(SERVER.ARCHIVES.files.findIndex(x => x.reference === file.reference),1);
+                                SERVER.ARCHIVES.files.sort(f);
+                                SERVER_setFilter();
+                                VISILIST_refresh();
+                                
+                            }else{console.log(req.responseText);alert(req.responseText);}
+						}else{alert('!--- HTML level Error (code '+req.status+')');}
+					}
+				}
+				req.send(null);
+            }
+            function SERVER_deleteFile(reference){
+                var req = new XMLHttpRequest();
+				req.open('GET','?action=edit_delete&sourceReference='+encodeURIComponent(reference),true);
+				req.onreadystatechange = function (){
+					if(req.readyState==XMLHttpRequest.DONE){
+						if(req.status==200){
+							if(req.responseText.slice(0,2).toLowerCase()=='ok'){
+                                console.log(req.responseText);
+                            }else{console.log(req.responseText);alert(req.responseText);}
+						}else{alert('!--- HTML level Error (code '+req.status+')');}
+					}
+				}
+				req.send(null);
+            }
+            // SERVER access functions
+            function SERVER_setFilter(ANDterms,listLength){
+                
+                if(ANDterms!==undefined && ANDterms!==SERVER.FILTER.ANDterms){
+                    SERVER.FILTER.ANDterms=ANDterms;
+                }
+                if(listLength!==undefined && listLength!==SERVER.ARCHIVES.defaultListLen){
+                    SERVER.FILTER.listLength=listLength;
+                }
+                else{
+                    SERVER.FILTER.listLength=SERVER.ARCHIVES.defaultListLen;
+                }
+                var f=function(a,b){return SERVER_FILE_getDate(b)-SERVER_FILE_getDate(a);};SERVER.ARCHIVES.files.sort(f);
+                compute_list_listLength_dateUpToIgnore       (SERVER.ARCHIVES);
+                
+       
+                function compute_list_listLength_dateUpToIgnore(deck,FromIndex){
+                    if(FromIndex===undefined){
+                        deck.list=[];
+                        var filesIndex=0;
+                    }
+                    else{
+                        var filesIndex=deck.more;
+                    }
+                    //speedway#
+                    var searchedstring,file;
+                    while(deck.list.length<SERVER.FILTER.listLength && filesIndex<deck.files.length){
+                        i=0;
+                        file=deck.files[filesIndex];
+                        searchedstring=SERVER_FILE_getLookupref (file);
+                        //first we filter on SERVER.FILTER.ANDterms to get rid of the maximum of negative (most discrimitative)
+                        while(i<SERVER.FILTER.ANDterms.length){
+                            if( searchedstring.indexOf(SERVER.FILTER.ANDterms[i])<0){i=SERVER.FILTER.ANDterms.length+1;}
+                            else{i++;}
+                        }
+                        if(i==SERVER.FILTER.ANDterms.length){
+                            //second we filter on or terms
+                            
+                                deck.list.push(deck.files[filesIndex]);
+                        }//else{console.log('filtered on ANDterms');}
+                        filesIndex++;
+                    }
+                    deck.more=filesIndex;
+                }
+           }
+            function SERVER_getFilter(){
+                return {
+					ANDterms:SERVER.FILTER.ANDterms.slice(),
+					listLength:SERVER.FILTER.listLength
+				};
+            }
+            function SERVER_getFilterList_arch(){
+                return SERVER.ARCHIVES.list;
+            }
+            function SERVER_getFilterList_arch_max(){
+                // returns false if ARCHIVES.list cannot be grown (we already searched to the end of 'ARCHIVES.files' to build the list)
+                // returns true if ARCHIVES.list MAY be grown (no garantees, we need to check again)
+                return SERVER.ARCHIVES.more!==SERVER.ARCHIVES.files.length;
+            }
+            // SERVER files access functions
+            function SERVER_FILE_getDate(file){
+                // * returns a JS date otherwise
+                if(!file.hasOwnProperty('date')){
+                    // since the server garanties the regular pattern: [\d\-]\d\d\d\d\d\d\d\d\d\d\d\d[ ](.*){1,240}
+                    file.date=new Date(parseInt(file.reference.slice(0,14)));
+                    file.name=file.reference.slice(15);
+                }
+                return file.date;
+            }
+            function SERVER_FILE_getName(file){
+                // * returns filename (string min 1 char, max 240 char)
+                if(!file.hasOwnProperty('date')){SSERVER_FILE_getDate(file);}
+                return file.name;
+            }
+            function SERVER_FILE_getSize(file){
+                return file.size;
+            }
+            function SERVER_FILE_getTextSize(file){
+                if(!file.hasOwnProperty('textSize')){
+                    file.textSize=bytesToHumansize(SERVER_FILE_getSize (file));
+                }
+                return file.textSize;
+            }
+            function SERVER_FILE_getTextDate(file,cut){
+                if(!file.hasOwnProperty('textDate')){
+                    // returns local time string  (12:00 in Paris)
+                    // cut=undefined => 2020-10-10T12:00:24.123
+                    // cut=16        => 2020-10-10T12:00
+                    // cut=10        => 2020-10-10
+                    var date=SERVER_FILE_getDate(file);
+                    file.textDate=new Date(date.getTime()-(date.getTimezoneOffset()*60000)).toISOString().slice(0,-1);
+                }
+                if(cut!=undefined){return file.textDate.slice(0,cut);}else{return file.textDate;}
+            }
+            function SERVER_FILE_getTextName(file){
+                if(!file.hasOwnProperty('textName')){
+                    file.textName=SERVER_FILE_getName(file);
+                }
+                return file.textName;
+            }
+            function SERVER_FILE_getHTMLSize(file){
+                if(!file.hasOwnProperty('htmlSize')){
+                    file.htmlSize=SERVER_FILE_getTextSize(file);
+                }
+                return file.htmlSize;
+            }
+            function SERVER_FILE_getHTMLDate(file){
+                if(!file.hasOwnProperty('htmlDate')){
+                    file.htmlDate=SERVER_FILE_getTextDate(file,10);
+                }
+                return file.htmlDate;
+            }
+            function SERVER_FILE_getHTMLName(file){
+                if(!file.hasOwnProperty('htmlName')){
+                    file.htmlName=string2HTML(SERVER_FILE_getTextName(file));
+                }
+                return file.htmlName;
+            }
+            function SERVER_FILE_getHumanReference(file){
+                if(!file.hasOwnProperty('humanReference')){
+                    file.humanReference=SERVER_FILE_getTextDate(file)+' '+SERVER_FILE_getTextName(file);
+                }
+                return file.humanReference;
+            }
+            function SERVER_FILE_getLookupref(file){
+                if(!file.hasOwnProperty('searchref')){
+                    file.searchref=normalize(file.reference);
+                }
+                return file.searchref;
+            }
+            function SERVER_FILE_getHref(file){
+                if(!file.hasOwnProperty('href')){
+					file.href='?action=archives_get&sourceReference='+encodeURIComponent(file.reference);
+                }
+                return file.href;
+            }
+            function SERVER_FILE_download(file){
+                var a = document.createElement('A');
+                a.href=SERVER_FILE_getHref(file);
+				a.download=file.reference;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+            {// SERVER private functions
+                var SERVER={
+                    FILTER:{
+                        ANDterms:[],              // array of search terms
+                        listLength:30
+                    },
+                    ARCHIVES:{
+						files:[],
+						list:[],
+						defaultListLen:30,
+						more:0//more stores the 'files' index of the last item of the list or files.length if there is no more
+					}
+                };
+            }// > SERVER private functions
+
+            // VISILIST is the content of the main page
+            function VISILIST_init(){                  // public function: initializes VISILIST
+                // set filter_input actions (AND filter)
+                document.getElementById('filter').oninput=function(e){SERVER_setFilter(normalize(document.getElementById('filter').value).split(" "));VISILIST_refresh();}
+                document.body.onscroll= function(e){if(document.documentElement.scrollTop + document.documentElement.clientHeight >= document.documentElement.scrollHeight-600){if(SERVER_getFilterList_arch_max()){SERVER_setFilter(undefined,SERVER_getFilterList_arch().length+20);VISILIST_refresh();}else{console.log("no more files to load");}}}
+                document.getElementById('filter').focus();
+            }
+            function VISILIST_refresh(){
+				var file,html,list,rank;
+				html='';
+				list=SERVER_getFilterList_arch();
+				rank=0;
+				while(rank!=list.length){
+					file=list[rank];
+					html=html+'<table class="file"><tr>'+
+					'  <td class="file_ref" id="ref_'+rank+'" onclick="VISILIST_download(\''+rank+'\');">'+SERVER_FILE_getHTMLDate(file)+' '+SERVER_FILE_getHTMLName(file)+'</td>'+
+					'  <td class="file_size" id="size_'+rank+'">'+
+					'    <span class="file_icon" onclick="VISILIST_rename(\''+rank+'\');" style="cursor:pointer;">🖊</span>'+
+					'    <span class="file_icon" onclick="VISILIST_delete(\''+rank+'\');" style="cursor:pointer;">❌</span>'+
+					'  </td>'+
+					'</table>';
+					rank++;
+				}
+				document.getElementById('VISILIST').innerHTML=html;
+            }
+            {// VISILIST private functions
+                function VISILIST_rename(rank){
+                    var file=SERVER_getFilterList_arch()[rank];
+                    var newHumanReference=prompt("Rename",SERVER_FILE_getTextName(file));
+                    if (newHumanReference!==null){
+                        if(newHumanReference!==SERVER_FILE_getHumanReference(file)){
+                            document.getElementById('size_'+rank).innerHTML='<span>...</span>';
+                            document.getElementById('ref_'+rank).style.color='grey';
+                            SERVER_renameFile(file,newHumanReference);
+                            console.log(name);
+                        }
+                   }
+                }
+				function VISILIST_delete(rank){
+                    var file=SERVER_getFilterList_arch()[rank];
+                    if (confirm("Delete file \""+SERVER_FILE_getName(file)+"\"?") == true) {
+                        var reference=SERVER_getFilterList_arch()[rank].reference;
+                        SERVER.ARCHIVES.files.splice(SERVER.ARCHIVES.files.findIndex(x => x.reference === reference),1);
+                        SERVER_setFilter();
+                        VISILIST_refresh();
+                        SERVER_deleteFile(reference);
+                    }
+				}
+                function VISILIST_download(rank){
+                    var file=SERVER_getFilterList_arch()[rank];
+                    SERVER_FILE_download(file);
+                }
+            }// > VISILIST private functions
+
+            {// GENERIC FUNCTIONS AND VARIABLES
+                function normalize(text){//removes diatrics
+                    return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                }
+                function bytesToHumansize(size){
+                    //note: filesize is in bytes
+                    //note this function counts in SI (1000 not 1024)
+                    if(Math.abs(size) < 1000){return size + ' B';}
+                    var units = ['kB','MB','GB','TB','PB','EB','ZB','YB'];
+                    var u = -1;
+                    do{size /= 1000;++u;}
+                    while(Math.abs(size) >= 1000 && u < units.length - 1);
+                    return size.toFixed(1)+' '+units[u];
+                }
+                function DATE_getTimestamp14(date){// return a 14 digits timestamp
+                    return ('0'+date.getTime().toString()).slice(-14);
+                }
+                function string2HTML(text){//non-fixed font, wrapping version of txt2HTML
+                    // 1: Plain Text Search
+                    //var text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/ /g, "&nbsp;<wbr>");//this is a bit extremistic: keep the accurate number of spaces to preserve the reference, yet make it wrappable
+                    var text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    // 2: Line Breaks
+                    text = text.replace(/\r\n?|\n/g, "<br>");
+                    // 3: Paragraphs
+                    //text = text.replace(/<br>\s*<br>/g, "</p><p>");
+                    return text;
+                }
+			} // > GENERIC FUNCTIONS AND VARIABLES
+        </script>
+    </head>
+    <body>
+        <input type='search' id='filter' autofocus\>
+        <div id='VISILIST' class='fileslist'>
+            Loading, please wait...
+        </div>
+	</body>
+</html>
+

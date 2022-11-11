@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Sharing</title>
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E📱%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+        <style>
+			*{margin:auto;}
+			body{max-width:800px;width:95%;min-width:350px;margin: auto;}
+			table{border-collapse:collapse;}
+			#title{font-size:3em;margin:1em auto 1em auto;}
+			#wait{display:none;position:fixed;z-index:1000;top:0;left:0;height:100%;width:100%;background: rgba( 255, 255, 255, .8 );font-size:5em;color:black;text-align:center;line-height:100%;}
+			#text{font-size:1em;margin:1em auto 1em auto;}
+			#panel{font-size:1em;border: 1px solid black;background-color:lightGrey;padding:1em;}
+			#button{text-align:center;font-size:18px;cursor:pointer;color:white;background-color:LimeGreen;width:10em;height:3em;line-height:3em;margin:2em auto;border-radius:0.2em;}
+			
+		</style>
+		<script>
+			window.onload=function (){
+                if(PAGE_isMobile()){document.body.style.fontSize='12px';}
+                retrieveLogin();
+			}
+            function retrieveLogin(){
+				disable();
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=retrieveLogin', true);
+                req.onreadystatechange = function(){
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            try {
+                                var response=JSON.parse(req.responseText);
+                                document.getElementById('login').innerText=response.login;
+                                document.getElementById('password').innerText=response.password;
+                                document.getElementById('protocol').innerText=response.protocol;
+                                document.getElementById('server').innerText=response.server;
+                                document.getElementById('port').innerText=response.port;
+                                document.getElementById('path').innerText=response.path;
+                                var link=response.protocol+'://'+response.login+':'+response.password+'@'+response.server+':'+response.port+response.path;
+                                var linkHTML=response.protocol+'&colon;&sol;&sol;'+response.login+'&colon;'+response.password+'&commat;'+response.server+'&colon;'+response.port+response.path;
+                                document.getElementById('link').innerHTML='<a href="'+link+'">'+linkHTML+'</a>';
+                                enable();console.log(response);
+                            }catch(e){alert('Error from server: see console');console.log('received: ',req.responseText);}
+                        }else{alert('!--- HTML level Error (code '+req.status+')');}
+                    }
+                }
+                req.send(null);
+            }
+            function stopDaemon(){
+				disable();
+                if(confirm("Disabling this daemon will remove the possibility to upload files from all your devices. You can reactivate it anytime but the password will be different.")){
+                    window.location.href = "?action=stopDaemon";
+                }
+                else{
+                    enable();
+                }
+            }
+			function disable(){
+                var length=3;
+                var duration=500;
+                window.dots = window.setInterval( function() {
+                    var wait = document.getElementById('wait');
+                    if ( wait.innerHTML.length > length )
+                        wait.innerHTML = "";
+                    else
+                        wait.innerHTML += ".";
+                }, duration);
+                document.body.style.overflow='hidden';
+                document.getElementById('wait').style.overflow='hidden';
+                document.getElementById('wait').style.display='block';
+                //document.body.style.cursor='wait';
+			}
+			function enable(){
+                document.body.style.overflow='';
+                document.getElementById('wait').style.overflow='';
+                document.getElementById('wait').style.display='none';
+                window.dots =null;
+				//document.body.style.cursor='';
+			}
+            function PAGE_isMobile(){
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+		</script>
+	</head>
+	<body>
+        <div id="title">Sharing 📱</div>
+        <div id="wait"></div>
+        <div id="panel">
+            To send files over FTP use the following credentials:
+            <table style="width:100%;margin:0.5em;border-collapse: separate;border-spacing: 0.5em 0.4em;table-layout: fixed;">
+                <tr>
+                    <td style="width:8em;">Login:</td>
+                    <td id='login' style="font-weight:bold"></td>
+                    <td style="width:14em;" rowspan=6><input type="button" id="stopDaemon" value="disable" onclick="stopDaemon();" style="width:10em;height:3em;"/></td>
+                </tr>
+                <tr>
+                    <td>Password:</td>
+                    <td id='password' style="font-weight:bold"></td>
+                </tr>
+                <tr>
+                    <td>Protocol:</td>
+                    <td id='protocol'></td>
+                </tr>
+                <tr>
+                    <td>Server:</td>
+                    <td id='server'></td>
+                </tr>
+                <tr>
+                    <td>Port:</td>
+                    <td id='port'></td>
+                </tr>
+                <tr>
+                    <td>Path/Folder:</td>
+                    <td id='path'></td>
+                </tr>
+            </table>
+        </div>
+        <ul style="margin-top:3em;">
+            <li style="margin-bottom:1em;"><span style="font-weight:bold">ANDROID</span>:
+                <ol>
+                    <li>Download and install <a href="https://play.google.com/store/apps/details?id=lysesoft.andftp">AndFTP</a></li>
+                    <li>Setup the FTP access with the information above</li>
+                    <li>For safety, select charset:utf8 instead of autodetect in the advanced section</li>
+                    <li>There is another application, even cleaner and that uses SFTP: &quot;SSH Send&quot;. However, it seems to be buggy and unmaintained which is sad</li>
+                </ol>
+            </li>
+            <li style="margin-bottom:1em;"><span style="font-weight:bold">IPHONE</span>:
+                <ul>
+                    <li>Buy an android device</li>
+                </ul>
+            </li>
+            <li style="margin-bottom:1em;"><span style="font-weight:bold">Computer</span>:
+                <ul>
+                    <li>Drop your file to the following ftp folder:<br><span id='link'></span></li>
+                </ul>
+            </li>
+        </ul>
+	</body>
+</html>
+ 
+ 

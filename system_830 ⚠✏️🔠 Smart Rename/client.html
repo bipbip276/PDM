@@ -1,0 +1,388 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Smart Renamer</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E⚠✏️🔠%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      .file {padding:1em;background-color:lightGrey;}
+      .file_button{text-align:center;background-color:lightGreen; cursor:pointer;}
+      .file_name{text-align:left;padding:1em;background-color:lightGrey;}
+    </style>
+    <script>
+        window.onload=function(){
+            getArchives(function(){
+                console.log('ARCHIVES retrieved.');
+                console.log('ARCHIVES_FILES_LIST: ',ARCHIVES_FILES_LIST);
+                console.log('ARCHIVES_FILES_LIST_Y: ',ARCHIVES_FILES_LIST_Y);
+                findFileToBeRenamed(function(){
+                    printFilesToBeRenamed();
+                });
+            });
+        }
+
+        var oneYearLimit=true;
+        
+        var ARCHIVES_FILES_LIST = []; //{reference: xxxxx,size:xxxxxx}
+        var ARCHIVES_FILES_LIST_Y = []; //{reference: xxxxx,size:xxxxxx}
+        var FILES_TO_BE_RENAMED = []; //{sourceReference: xxxxx, suggestedReference: xxxxxxx, HTMLreason: 'reason'}
+        function getArchives(callback) {
+            var req = new XMLHttpRequest();
+            req.open('get', '?action=getArchives', true);
+            req.onload = function() {
+                if(req.status === 200) {
+                    try {
+                        JSON.parse(req.responseText);
+                        var res = true;
+                    } catch(e) {
+                        var res = false;
+                    }
+                    if(res) {
+                        ARCHIVES_FILES_LIST = JSON.parse(req.responseText);
+                        ARCHIVES_FILES_LIST.sort(function(a,b){return getDate(b)-getDate(a);});
+                        var index=0;
+                        var lineDate = new Date();
+                        lineDate =lineDate.setFullYear(lineDate.getFullYear() - 1);
+                        while(index < ARCHIVES_FILES_LIST.length && getDate(ARCHIVES_FILES_LIST[index])>lineDate){
+                            ARCHIVES_FILES_LIST_Y.push(ARCHIVES_FILES_LIST[index]);
+                            index++;
+                        }
+                        callback();
+                    } else {
+                        alert("not valid json: " + req.responseText);
+                    }
+                } else {
+                    alert("http error");
+                }
+            }
+            req.send();
+        }
+        function findFileToBeRenamed(callback) {
+            var LIST=ARCHIVES_FILES_LIST_Y;
+            if(!oneYearLimit){LIST=ARCHIVES_FILES_LIST;console.log('Working on ARCHIVES_FILES_LIST.');}else{console.log('Working on ARCHIVES_FILES_LIST_Y.');}
+            FILES_TO_BE_RENAMED=[];
+            for(index = 0; index < LIST.length; index++) {
+                if(findLeadingDate(LIST[index]) !== null) {FILES_TO_BE_RENAMED.push(LIST[index]);}
+                else if(findExtraSpaces(LIST[index]) !== null) {FILES_TO_BE_RENAMED.push(LIST[index]);}
+                else if(findControlCharacters(LIST[index]) !== null) {FILES_TO_BE_RENAMED.push(LIST[index]);}
+                else if(findUppercaseExtension(LIST[index]) !== null) {FILES_TO_BE_RENAMED.push(LIST[index]);}
+                else if(findDesueteExtension(LIST[index]) !== null) {FILES_TO_BE_RENAMED.push(LIST[index]);}
+                //else{}
+            }
+            console.log('FILES_TO_BE_RENAMED populated: ', FILES_TO_BE_RENAMED);
+            callback();
+            //lib
+            function findLeadingDate(file) {
+                // Searches a date at the beginning of a string (in several common formats)
+                // then prompt the user for its validation and:
+                // RETURNS: null if no leading date detected
+                // RETURNS: a suggested file
+                var date = null;
+                var name = null;
+                var dateString = '';
+                var capture = null;
+                /* Unix timestamp detection cancelled: not discriminatory enought
+                if((capture = str.match(/^(\d\d\d\d\d\d\d\d\d\d)\ ([^\d].*)$/)) && capture !== null) {
+                    // possible a unix timestamp
+                    dateString = capture[1];
+                    date = new Date(dateString * 1000);
+                    name = capture[2].trim();
+                } else */
+                /* js timestamp detection cancelled: not discriminatory enought
+                if((capture = str.match(/^(\d\d\d\d\d\d\d\d\d\d\d\d\d)\ ([^\d].*)$/)) && capture !== null) {
+                    // js timestamp
+                    dateString = capture[1];
+                    date = new Date(parseInt(dateString));
+                    name = capture[2].trim();
+                }
+                } else */
+                capture=getName(file).match(/^([a-zA-Z\-_]*)([0-2][0-9][0-9][0-9])([\\-]?([0-1][0-9])([\\-]?([0-3][0-9])([\ T_]?([0-2][0-9])([\:\_]?([0-5][0-9])([\:\_]?([0-5][0-9])([\:\.\_]?([0-9][0-9][0-9])(Z|[\+\-]?\d?\d[\.\:]?\d?\d?)?)?)?)?)?)?)?(_HDR)?(.*)$/);
+                if(capture !== null){
+                    //console.log(getName(file));
+                    // recognized time formats:
+                    // 2019-02-12T12:24:32.049Z
+                    // 2019-02-12T12:24:32.049+2
+                    // 2019-02-12T12:24:32.049+2.00
+                    // 2019-02-12 12:24:32.049
+                    // 2019-02-12 12:24:32
+                    // 2019-02-12 12:24:32
+                    // 2019-02-12 12:24
+                    // 2019-02-12
+                    // 20190212 122432049
+                    // 20190212_122432049
+                    // 20190212 122432
+                    // 20190212_122432
+                    // IMG_2019-02-12T12:24:32.049Z
+                    // IMG_2019-02-12T12:24:32.049+2
+                    // IMG_2019-02-12T12:24:32.049+2.00
+                    // IMG_2019-02-12 12:24:32.049
+                    // IMG_2019-02-12 12:24:32
+                    // IMG_2019-02-12 12_24_32
+                    // IMG_2019-02-12 12:24
+                    // IMG_2019-02-12
+                    // IMG_2019-02
+                    // IMG_20190212 122432049
+                    // IMG_20190212_122432049
+                    // IMG_20190212_122432_049
+                    // IMG_20190212 122432
+                    // IMG_20190212_122432
+                    // VID_20190212_122432
+                    // PXL_20190212_122432
+                    // and more...
+                    // ONPURPOSE: dontes only at the beggining of the string
+                    var YYYY = capture[2];
+                    var MM = capture[4];
+                    var DD = capture[6];
+                    var hh = capture[8];
+                    var mm = capture[10];
+                    var ss = capture[12];
+                    var ms = capture[14];
+                    var timezone = capture[15];
+                    if(MM === undefined || MM === '00') {MM = '01';}
+                    if(DD === undefined || DD === '00') {DD = '01';}
+                    if(hh === undefined) {hh = '12';}
+                    if(mm === undefined) {mm = '00';}
+                    if(ss === undefined) {ss = '00';}
+                    if(ms === undefined) {ms = '000';}
+                    if(timezone === undefined || timezone === 'Z') {timezone = '';}
+                    dateString = YYYY + '-' + MM + '-' + DD + 'T' + hh + ':' + mm + ':' + ss + '.' + ms + timezone;
+                    date = new Date(dateString);
+                    name = capture[17].trim();
+                }
+                if(date !== null) {
+                    if(!isNaN(date.getTime())){
+                        //discriminate even more: date in the past only
+                        if(date<new Date()){
+                            file.suggestedDateString='0' + date.getTime().toString().slice(-14);
+                            file.suggestedName=name;
+                            file.suggestedReference=file.suggestedDateString+ ' ' + file.suggestedName;
+                            file.HTMLreason= "Found a date: <b>" + YYYY + '-' + MM + '-' + DD + "</b>"+ ' ' + hh + ':' + mm + ':' + ss + '.' + ms
+                            return file;
+                        }
+                        else {
+                            console.log('WARNING, detected a date ('+getName(file)+' ==> ' + dateString + '), but it is in the future, ignoring it');
+                            return null;
+                        }
+                    }
+                    else {
+                        console.log('WARNING, STR_findLeadingDate found something strangely close to a date ('+getName(file)+' ==> ' + dateString + '), but that does not transform into a valid js date');
+                        return null;
+                    }
+                }
+                else {
+                    return null;
+                } //no leading date detected
+            }
+            function findExtraSpaces(file) {
+                //detect multiple white space
+                // RETURNS: null if nothing found
+                // RETURNS: a string with a suggested new reference
+                var res = getName(file).replace(/\s{2,}/g, " ").trim();
+                if(res !== getName(file)) {
+                    file.suggestedDateString=getDate_string(file);
+                    file.suggestedName=res;
+                    file.suggestedReference=file.suggestedDateString+ ' ' + file.suggestedName;
+                    file.HTMLreason= "Superfluous spacing characters (white spaces, tabs, carriage...) found";
+                    return file;
+                }
+                else{
+                    return null;
+                }
+            }
+            function findControlCharacters(file) {
+                //detect control characters
+                // RETURNS: null if nothing found
+                // RETURNS: a string with a suggested new name
+                var res = getName(file).replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
+                if(res !== getName(file)) {
+                    file.suggestedDateString=getDate_string(file);
+                    file.suggestedName=res;
+                    file.suggestedReference=file.suggestedDateString+ ' ' + file.suggestedName;
+                    file.HTMLreason= "Control characters found";
+                    return file;
+                } else {
+                    return null;
+                }
+            }
+            function findUppercaseExtension(file){
+               var capture = getName(file).match(/^(.*)\.([A-Z0-9]{1,4})$/);
+               if(capture!==false && capture !== null) {
+                    file.suggestedDateString=getDate_string(file);
+                    file.suggestedName=capture[1]+'.'+capture[2].toLowerCase();
+                    file.suggestedReference=file.suggestedDateString+ ' ' + file.suggestedName;
+                    file.HTMLreason= "upper case extension (beurk!)";
+                    return file;
+                } else {
+                    return null;
+                }
+            }
+            function findDesueteExtension(file){
+               var desueteExtensions =      ['jpeg','mpeg','htm' ];
+               var fashionnableExtensions = ['jpg' ,'mpg' ,'html'];
+               var index=desueteExtensions.indexOf(getNameExtension(file))
+               if(index!=-1){
+                    file.suggestedDateString=getDate_string(file);
+                    file.suggestedName=getNameBody(file)+'.'+fashionnableExtensions[index];
+                    file.suggestedReference=file.suggestedDateString+ ' ' + file.suggestedName;
+                    file.HTMLreason= "Extension is not beautiful ("+desueteExtensions[index]+"), '"+fashionnableExtensions[index]+"' is more elegant";
+                } else {
+                    return null;
+                }
+            }
+        }
+        function printFilesToBeRenamed() {
+            var html = '';
+            if(FILES_TO_BE_RENAMED.length > 0) {
+                html = html + "<table style='width:100%;table-layout: fixed;margin:3em auto;'>";
+                html = html + "  <thead>";
+                html = html + "  <tr>";
+                html = html + "    <td style='width:60%;max-width:500px;'>File:</td>";
+                html = html + "    <td style='width:30%;max-width:300px;'>&nbsp;</td>";
+                html = html + "    <td style='width:20%;max-width:100px;'>&nbsp;</td>";
+                html = html + "  </tr>";
+                html = html + "  </thead>";
+                html = html + "  <tbody>";
+                for(index = 0; index < FILES_TO_BE_RENAMED.length; index++) {
+                    html = html + "  <tr id='file_" + index + "'>";
+                    html = html + "    <td class='file_name'>" + getName(FILES_TO_BE_RENAMED[index]) + "</td>";
+                    html = html + "    <td class='file_name'>" + FILES_TO_BE_RENAMED[index].HTMLreason + "</td>";
+                    html = html + "    <td class='file_button' id='file_button_" + index + "' onclick='rename(" + index + ")'>Rename</td>";
+                    html = html + "  </tr>";
+                }
+                if(oneYearLimit){
+                    html = html + "  <tr> <td style='text-align:center;vertical-align:middle; cursor:pointer;padding:2em 0; color:blue;' colspan='3' onclick='oneYearLimit=false;findFileToBeRenamed(printFilesToBeRenamed);'>Only files less than 12 months old are shown. Click here to search all files.</td></tr>";
+                }
+                else{
+                    
+                }
+                html = html + "  </tbody>";
+                html = html + "</table>";
+            } else {
+                html = "<div><span style='font-size:2em;color:green'>&#10004;</span>  No file that could be renamed was found.</div>";
+                if(oneYearLimit){
+                    html = html + "<div style='text-align:center;vertical-align:middle; cursor:pointer;padding:2em 0; color:blue;' colspan='3' onclick='oneYearLimit=false;findFileToBeRenamed(printFilesToBeRenamed);'>Only files less than 12 months old are shown. Click here to search all files.</div>";
+                }
+            }
+            document.getElementById('content').innerHTML = html;
+            console.log('Done!');
+        }
+        function rename(index) {
+            document.getElementById('file_button_' + index).onclick = '';
+            document.getElementById('file_button_' + index).style.backgroundColor = 'grey';
+            document.getElementById('file_button_' + index).innerHTML = '...';
+            var sourceReference = FILES_TO_BE_RENAMED[index].reference;
+            var date = FILES_TO_BE_RENAMED[index].suggestedDateString;
+            var name = prompt("New name:", FILES_TO_BE_RENAMED[index].suggestedName);
+            var error=isValidArchiveReference(date+' '+name);
+            while(error!=='' && name != null){
+                name = prompt("!: "+error,FILES_TO_BE_RENAMED[index].name);
+                error=isValidArchiveReference(date+' '+name);
+            }
+            if(name != null) {
+                var destinationReference = date+' '+name;
+                var req = new XMLHttpRequest();
+                req.open('get', '?action=file_rename&sourceReference=' + encodeURIComponent(sourceReference) + '&destinationReference=' + encodeURIComponent(destinationReference), true);
+                req.onload = function() {
+                    if(req.status === 200) {
+                        if(req.responseText.substr(0, 2).toLowerCase() == 'ok') {
+                            console.log('file ' + sourceReference + ' was renamed as ' + destinationReference);
+                            document.getElementById('file_' + index).style.display = 'none';
+                        } else {
+                            alert(req.responseText);
+                        }
+                    } else {
+                        alert(req.responseText);
+                    }
+                }
+                req.send();
+            }
+            else{
+                document.getElementById('file_button_' + index).innerHTML = 'Cancelled';
+            }
+        }
+        //lib
+        function getDate(file){
+            if(!file.hasOwnProperty('date')){
+                // since the server garanties the regular pattern: [\d\-]\d\d\d\d\d\d\d\d\d\d\d\d[ ](.*){1,240}
+                file.date=new Date(parseInt(file.reference.slice(0,14)));
+                file.name=file.reference.slice(15);
+            }
+            return file.date;
+        }
+        function getName(file){
+            if(!file.hasOwnProperty('name')){
+                getDate(file);
+            }
+            return file.name;
+        }
+        function getNameExtension(file){
+            if(!file.hasOwnProperty('nameExtension')){
+                file.nameExtension=getName(file).substring(getName(file).lastIndexOf('.')+1);
+            }
+            return file.nameExtension;
+        }
+        function getNameBody(file){
+            if(!file.hasOwnProperty('nameBody')){
+                file.nameBody=getName(file).substring(0, getName(file).lastIndexOf('.'));
+            }
+            return file.nameBody;
+        }
+        function getDate_string(file){
+            if(!file.hasOwnProperty('dateString')){
+                file.dateString=file.reference.slice(0,14);
+            }
+            return file.dateString;
+        }
+        function getName_string(file){
+            if(!file.hasOwnProperty('nameString')){
+                file.nameString=getName(file);
+            }
+            return file.nameString;
+        }
+        function getDate_stringHuman(file){
+            if(!file.hasOwnProperty('dateStringHuman')){
+                //file.dateStringHuman=new Date(getDate(reference).getTime() - (getDate(reference).getTimezoneOffset() * 60000)).toISOString().replace('T', ' ').slice(0, -1);
+                file.dateStringHuman=new Date(getDate(file).getTime() - (getDate(file).getTimezoneOffset() * 60000)).toISOString().replace('T', ' ').slice(0, -1);
+            }
+            return dateStringHuman;
+        }
+        function getReference(date,name){
+            return '0' + date.getTime().toString().slice(-14) + ' ' + name;
+        }
+        function isValidArchiveReference(reference){
+            if(typeof reference === 'string' || reference instanceof String){
+                if(reference.match(/^[\d\-]\d\d\d\d\d\d\d\d\d\d\d\d\d\ .+/)){
+                    if(reference.length <= 255){
+                        if(reference.length>15){
+                            if(reference.indexOf('/')=== -1){
+                                return '';
+                            }else{return "A valid reference cannot contain the character '/'";}
+                        }else{return "A valid reference must at least 1 character long";}
+                    }else{return "A valid reference must be < 255 bytes (here:"+(reference.length)+"), name is probably too long";}
+                }else{return "A valid reference must have a ms timestamp encoded on the first 14 characters";}
+            }else{return "A valid reference must be a string";}
+        }
+    </script>
+  </head>
+  <body style='width:95%;min-width:300px;margin: auto;'>
+        <H1 style='max-width:800px;margin:3em auto 2em auto;'>📑 Smart Renamer</H1>
+        <p style='max-width:800px;font-size:1em;margin:2em auto 1em auto;'>
+            The purpose of this script is to 'cleanify' your archives. It will examine your archived files and when relevant will propose you to rename those. It looks for:
+        </p>
+        <ul style='max-width:800px;font-size:1em;margin:1em auto 3em auto;'>
+            <li>Filenames starting with a date</li>
+            <li>Filenames with redundant white spaces or invisible characters such as tabs, newlines...</li>
+            <li>Filenames with invisible control characters (invisible, certainly an error)</li>
+            <li>Filenames with an uppercase extension (beurk)</li>
+        </ul>
+        <p style='max-width:800px;font-size:1em;margin:3em auto;'>
+            NOTE: dates that are more that 1 year old or in the future are ingnored by default. You have the option to by-pass this down the page.
+        </p>
+        <p style='max-width:800px;font-size:1em;margin:3em auto;'>
+            WARNING: this script modifies archived files which breaks a key assumption: Archives files are supposed to be read-only forever. Modifying them may break systems that rely on it (e.g a website hard-linking on an archived document). It also breaks information legit preservation.
+        </p>
+        <div id='content' style='max-width:800px;margin:3em auto;'><span id='wait'><style onload="this.parentElement.className='wait';" type="text/css" scoped>.wait{animation: blinker 1s linear infinite;} @keyframes blinker {50% {opacity: 0;}}</style>Calculating, please wait...</span></div>
+        <div id='close' style='max-width:800px;margin:3em auto;text-align:center;'><input type='button' style='width:50% ;display:inline;font-size:1em;height:3em;background-color:limeGreen;color:white;cursor:pointer;border:0;margin:2em auto;border-radius:0.2em;' value="Close" onclick="window.open('','_self').close();"/></div>
+    </body>
+</html>

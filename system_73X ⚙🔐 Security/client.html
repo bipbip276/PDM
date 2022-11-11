@@ -1,0 +1,95 @@
+<html>
+    <head>
+		<meta charset="UTF-8">
+        <title>Security</title>
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E🔐%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+		<script>
+            window.onload=function(){
+                //getLogin();
+			}
+			function reset(){
+                hide();
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=reset', true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){if(req.status==200){
+                        alert(req.responseText+'\n this page will now reload');
+                        location.reload();
+                        show();
+                    }
+                    else{if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}}
+                }}
+                req.send(null);
+			}
+			function setRedirection(){
+                hide();
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=setRedirection', true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){if(req.status==200){
+                        alert(req.responseText+'\n this page will now reload');
+                        location.reload();
+                        show();
+                    }
+                    else{if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}}
+                }}
+                req.send(null);
+			}
+			function setBasicAuth(){
+                var password = prompt("Please enter a password", "");
+                if (password != null) {
+                    var password2 = prompt("Please repeat password", "");
+                    if (password == password2){
+                        hide();
+                        var req = new XMLHttpRequest();
+                        req.open('GET','?action=setBasicAuth&password='+password, true);
+                        req.onreadystatechange = function () {
+                            if(req.readyState==4){if(req.status==200){
+                                alert(req.responseText+'\n this page will now reload');
+                                location.reload();
+                                show();
+                            }
+                            else{if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}}
+                        }}
+                        req.send(null);
+                    }
+                    else{
+                        alert("Password entries not matching!");
+                    }
+                }
+                
+			}
+            function hide(){
+                document.body.style.cursor='wait';
+                document.getElementById('show').style.display='none';
+                document.getElementById('wait').style.display='';
+            }
+            function show(){
+                document.body.style.cursor='';
+                document.getElementById('show').style.display='';
+                document.getElementById('wait').style.display='none';
+            }
+        </script>
+    </head>
+    <body style="border:0;margin:0">
+        <h1>Server Credentials</h1>
+        <table id="show">
+            <tr style="">
+                <td style=""><button id="" onclick="reset()">Set</button></td>
+                <td style="font-weight:bold;">No security:</td>
+                <td style="font-weight:italic;">Server is cleared of any configuration file: Server default, no mandatory https, no credentials.</td>
+            </tr>
+            <tr style="">
+                <td style=""><button id="" onclick="setRedirection()">Set</button></td>
+                <td style="font-weight:bold;">Redirection:</td>
+                <td style="font-weight:italic;">Configuration files (htaccess, index.php) are set to redirect any connection from the root folder to the system main page.</td>
+            </tr>
+            <tr style="">
+                <td style=""><button id="" onclick="setBasicAuth()">Set</button></td>
+                <td style="font-weight:bold;">Basic authentication:</td>
+                <td style="font-weight:italic;">Configuration files (htaccess, htusers index.php) are set to enforce https and demand password (note: login=pdm)</td>
+            </tr>
+        </table>
+        <div id="wait" style="color:grey;height:100%;width:100%;display:none;"></div>
+    </body>
+</html>

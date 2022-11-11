@@ -1,0 +1,115 @@
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<title>Settings</title>
+		<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E⚙%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>*{margin:auto;padding:0;width:100%;}</style>
+		<script>
+            window.onload=function(){
+                loadName();
+                loadIcon();
+			}
+            function loadName(){
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=getName&cachebreaker=' + new Date().getTime(),true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            document.getElementById('name_wait').style.display='none';
+                            document.getElementById('name').innerText=req.responseText;
+                        }else{alert('!--- HTML level Error (code '+req.status+')');}
+                    }
+                }
+                req.send(null);
+            }
+            function loadIcon(){
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=getIcon&cachebreaker=' + new Date().getTime(),true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            document.getElementById('icon_wait').style.display='none';
+                            document.getElementById('icon').src="data:image/svg+xml;base64,"+btoa(unescape(encodeURIComponent(req.responseText)));
+                        }else{alert('!--- HTML level Error (code '+req.status+')');}
+                    }
+                }
+                req.send(null);
+            }
+            function updateName(){
+                document.getElementById('name').style.display='none';
+                var newname=prompt("New name:",document.getElementById('name').innerText);
+                if(newname!==null){
+                    document.getElementById('name_wait').style.display='inline-block';
+                    var req = new XMLHttpRequest();
+                    req.open('GET','?action=changeName&newName='+encodeURIComponent(newname),true);
+                    req.onreadystatechange = function () {
+                        if(req.readyState==4){
+                            if(req.status==200){
+                                if(req.responseText.substr(0,2).toLowerCase()=='ok'){
+                                    document.getElementById('name').innerText=newname;
+                                    document.getElementById('name_wait').style.display='none';
+                                    document.getElementById('name').style.display='inline-block';
+                                }
+                                else{alert('Error: '+req.responseText);}
+                            }else{alert('!--- HTML level Error (code '+req.status+')');}
+                        }
+                    }
+                    req.send(null);
+                }
+                else{
+                    document.getElementById('name_wait').style.display='none';
+                    document.getElementById('name').style.display='inline-block';
+                }
+            }
+            function updateIcon(){
+                document.getElementById('icon').src="";
+                document.getElementById('icon_wait').style.display='inlineBlock;';
+                document.getElementById('iconInput').onchange=function(){
+                    var req = new XMLHttpRequest();
+                    var post=new FormData();
+                    post.append('newIcon',document.getElementById('iconInput').files[0]);
+                    req.open('POST','?action=changeIcon',true);
+                    req.onreadystatechange = function () {
+                        if(req.readyState==4){
+                            if(req.status==200){
+                                if(req.responseText.substr(0,2).toLowerCase()=='ok'){
+                                    loadIcon();
+                                    //document.getElementById('icon').src="/SETTINGS_icon.svg?" + new Date().getTime();
+                                    //alert('System icon was changed');
+                                }
+                                else{alert('Error: '+req.responseText);}
+                            }else{alert('!--- HTML level Error (code '+req.status+')');}
+                        }
+                    }
+                    req.send(post);
+                };
+                document.getElementById('iconInput').click();
+            }
+		</script>
+        <style>
+        </style>
+    </head>
+    <body style='width:95%;min-width:300px;margin: auto;'>
+        <h1 style='max-width:800px;margin:3em auto 2em auto;'>⚙ Settings</h1>
+        <div style='max-width:800px;font-size:1em;margin:1em auto 1em auto;'>
+            This plugins allows you to change the system appearance settings.
+        </div>
+        <div style='max-width:800px;font-size:1em;margin:2em auto 1em auto;'> 
+           PDM installation name:
+        </div>
+        <div style='max-width:800px;font-size:1em;margin:1em auto 1em auto;text-align:center;font-size:2em;'>
+            <span id='name' style='cursor:pointer;' onclick='updateName()'></span>
+            <span id='name_wait'><style onload='this.parentElement.className="name_wait";' type='text/css' scoped>.name_wait{animation: blinker 1s linear infinite;} @keyframes blinker {50% {opacity: 0;}}</style>Loading...</span>
+        </div>
+
+        <div style='max-width:800px;font-size:1em;margin:2em auto 1em auto;'>
+           PDM installation Icon:
+        </div>
+        <div style='max-width:800px;font-size:1em;margin:1em auto 1em auto;text-align:center;font-size:2em;'>
+            <img id='icon'  style='cursor:pointer;height:4em;object-fit:contain;' width='' height='' onclick='updateIcon()' src='' />
+            <input id='iconInput' type='file' style='display:none;' accept='image/svg+xml'/>
+            <span id='icon_wait'><style onload='this.parentElement.className="icon_wait";' type='text/css' scoped>.icon_wait{animation: blinker 1s linear infinite;} @keyframes blinker {50% {opacity: 0;}}</style>Loading...</span>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<title>About</title>
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3Eℹ%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>*{margin:auto;padding:0;width:100%;}
+            a[target="_blank"]::after {
+                  content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==);
+                  margin: 0 3px 0 5px;
+                  font-color:blue;}
+            h3{max-width:800px;width:95%;min-width:300px;font-size:1em;margin:2em auto 1em auto; border-bottom:solid 1px grey}
+        </style>
+		<script></script>
+    </head>
+    <body>
+        <h1 style='max-width:800px;width:95%;min-width:300px;margin:2em auto 1em auto;'>🌱 PDM, the Personnal Data Manager</h1>
+        <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+            Personal Data Manager (PDM) is a personal digital vault to keep your files private, intact and accessible. (<a target='_blank' href="https://edenuniverse.net/PDM/">website</a>)
+        </div>
+        <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+            PDM allows you to host all your personnal data  to keep your files in a single standard folder located on the server.
+            Files can be added by drag-and-drop, &#39;shared&#39; from a mobile device), uploaded over FTP, etc... depending on your server configuration.
+            Uploaded files can then be viewed, edited, archived or set as reminders.
+        </div>
+        <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+            <span style='color:blue;cursor:pointer;' onclick='if(document.getElementById("userGuide").style.display!="block"){document.getElementById("userGuide").style.display="block";}else{document.getElementById("userGuide").style.display="none";}' >Click here to get more information about using PDM...</a>
+        </div>
+            <!--****************************************************************************************************************-->
+        <div id='userGuide' style='display:none;background-color:lightGray; max-width:800px;width:100%; margin: 0 auto ; padding:  0;'>
+                <h3 style='padding-top:2em;'>Adding a file</h3>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    To upload a file, simply drag and drop it onto the page.
+                </div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    You can also create a new text file: juste type the name in the search field (+enter).
+                </div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    Plugins and / or server setup can let you create or import files sideways (share from mobile devices, send over FTP, drop in desktop folder, import from mailbox, etc...).
+                    It just need to drop the file in the server's INBOX folder!
+                </div>
+                <h3>Files management&#39;s logics</h3>
+                <!--<img src="PDM_user_guide_main_page.png" alt="Main page" width="144" height="186" style="height:144px;width:186px;float:right;border:1px solid DarkSlateGray;margin:1em">-->
+                <div style="height:144px;width:186px;float:right;border:1px solid DarkSlateGray;margin:1em;background-color:green;">image</div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    Added files land in the INBOX.
+                    Never-seen-before files requiring attention appear in red and can be acknowleged by clicking on it.
+                    Other files appear in blue.
+                </div> 
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    INBOX files can be viewed (click), edited (✍), retrieved (➥), pushed-back to a later date (<strong><span style="color:red">▲</span></strong>) or archived (<strong><span style="color:black">▼</span></strong>)
+                </div> 
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    ARCHIVED files appear in gray. These are read-only; they can be viewed (click), downloaded (📥), copied-back to inbox (<strong><span style="color:blue">⧋</span></strong>)
+                </div>
+                <h3>Filtering</h3>
+                
+				<div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    The <strong>search field</strong> allows to filter files based on filename
+                </div>
+				<div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'> 
+                    The <strong>menu (☰)</strong> reveals additional filtering options:
+				</div>
+                <table style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:0 em auto 0 auto;padding:0; border:0;table-layout:fixed;'> 
+                    <tr><td style='font-weight:bold;width:7em;vertical-align:top;'>☛ File types</td><td>filters lets the user view files filtered on extensions (📷 (jpg, png…), 🎬 (mp4, avi…), 🎵 (mp3, ogg…), 📄 (pdf, docx, odt, xls…), 📧 (eml, msg…), 📦 (zip, tar…), 💻 (sh, php, exe…), 👤 (vcard, vcf…), 📆 (ics, ical…), 🔗 (desktop, lnk…), 📝 (md, txt…), � (unknown extensions!).</td></tr>
+                    <tr><td style='font-weight:bold;width:7em;vertical-align:top;'>☛ Show up to</td><td>filters files based on the date. ‘ALL’, shows all files, including those in the future (as reminders).</td></tr>
+                    <tr><td style='font-weight:bold;width:7em;vertical-align:top;'>☛ Sort by</td><td>lets the user sort files by date, size or shuffle.</td></tr>
+                    <tr><td style='font-weight:bold;width:7em;vertical-align:top;'>☛ &#35;</td><td>reveals an extra menu with the list of available plugins.</td></tr>
+               </table>
+                
+                <h3>View</h3>
+                <!--<img src="PDM_user_guide_view_mode.png" alt="View mode" width="144" style="float:right;border:1px solid DarkSlateGray;margin:1em">-->
+                <div style="height:144px;width:186px;float:right;border:1px solid DarkSlateGray;margin:1em;background-color:green;">image</div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    When viewing a file, the <strong>menu button (☰)</strong> lets the user access a list of additional predefined actions for the file and the <strong>close button (✕)</strong> brings the user back to the main page.
+                </div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    <strong>Text files, Images, Videos, Audio files, emails, PDFs</strong> will be rendered in most cases.
+                    For streamables (i.e. Videos and Audio files only) if the user clicks on the icon -not just the 'play' button- files will play one after another (i.e ‘auto-play’).
+                </div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                    If the system cannot properly display the content of a file, it will show a clickable icon to symbolize the file’s content and let the user download it to view it locally.
+                </div>
+
+                <h3>Edit</h3>
+                <!--<img src="PDM_user_guide_edit_mode.png" alt="Edit mode" width="144" style="float:right;border:1px solid DarkSlateGray;margin:1em">-->
+                <div style="height:144px;width:186px;float:right;border:1px solid DarkSlateGray;margin:1em;background-color:green;">image</div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>In edit mode, the <strong>close button (✕)</strong> discards changes and takes the user to the precendent screen, the <strong>save button (💾)</strong> and <strong>delete button (🗑)</strong>, saves &frasl; deletes the changes and takes the user back to the main page.</div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>The <strong>filename field</strong> lets the user change the filename. The filename cannot exceed 240 characters or contain ‘&frasl;’ characters.</div>
+                <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;padding-bottom:2em;'>
+                    <strong>Text files content</strong> (md,txt…) can be edited.
+                    For non-text files, the system will show an icon to symbolize the file’s content.
+                    The user can click the icon to download the file’s content and modify it locally. The modified file can then be dragged-and-dropped on the icon to upload back the modified file’s content.
+                </div>
+
+            </div>
+            
+            <!--****************************************************************************************************************-->
+            <!--****************************************************************************************************************-->
+            <!--****************************************************************************************************************-->
+            <h2 style='max-width:800px;width:95%;min-width:300px;margin:2em auto 1em auto;'>Install, Customize, Develop</h2>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                To install PDM: Download, uncompress, copy onto a linux + http/php server.
+            </div>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                System configuration is done by editing directly the server file (php) and the client file (html&#47;javascript).
+                Plugins can be added&#47;removed&#47;modified to give the user server-level functionnalities (backup, password management, share from mobile devices, etc...).
+            </div>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                <span style='color:blue;cursor:pointer;' onclick='if(document.getElementById("technicalGuide").style.display!="block"){document.getElementById("technicalGuide").style.display="block";}else{document.getElementById("technicalGuide").style.display="none";}' >Click here to get read more technical information...</a>
+            </div>
+            <!--****************************************************************************************************************-->
+            <div id='technicalGuide' style='display:none;background-color:lightGray; max-width:800px;width:100%;padding: 1em 0;'>
+                
+                
+                
+                
+                
+                
+                
+			<h3>Install and Run</h3>
+			<div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>Create a http server with the following features:</div>
+			<ul style='display:block;max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 0 auto;'>
+				<li style='margin-left: 1.5em;'><strong>OS</strong>: linux (we need 'stat', 'nohup', 'php' commands)</li>
+                <li style='margin-left: 1.5em;'><strong>Security</strong>: the web server should ensure the adequate security level of the entire root directory. HTTPS + http authentication is the most basic solution. In any case security and authentication should be taken care of by the http server.</li>
+				<li style='margin-left: 1.5em;'><strong>PHP</strong> support (last version)</li>
+            	<li style='margin-left: 1.5em;'><strong>File system</strong>: Ext4</li>
+            	<li style='margin-left: 1.5em;'><strong>Disk space</strong>: "Enougth"</li>
+            	<li style='margin-left: 1.5em;'>Other services such as SFTP, SSH, SFT, CRON will be needed to add server-level functionalities through plugins</li>
+            </ul>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>Copy files In the root directory (note: all are needed. They will NOT be created automatically)</div>
+            <ul style='display:block;max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 0 auto;'>
+				<li style='margin-left: 1.5em;'>Copy file “SETTINGS_name.txt”</li>
+				<li style='margin-left: 1.5em;'>Copy file “SETTINGS_icon.svg”</li>
+				<li style='margin-left: 1.5em;'>Copy folder “INBOX”</li>
+				<li style='margin-left: 1.5em;'>Copy folder “DESKTOP”</li>
+				<li style='margin-left: 1.5em;'>Copy folder “ARCHIVES”</li>
+				<li style='margin-left: 1.5em;'>Copy folder “system”</li>
+            </ul>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>Make sure all files and folder have the proper permission (chmod -R 755)</div>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                Note: for a first try, the system works perfectly fine on linux with PHP built-in server.
+                To do this, simply uncompress all the files in a folder, .. ... and your done! (oups, PHP built in server is single-threaded, you will need to configure the client to do time-fixed polling, not long polls)
+            </div>
+			<div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                Visit /system/index.php
+            </div>
+			
+			<h3>Configure</h3>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                The folder 'system' contains a website (AKA, the 'system') that honnors <a href='PDM_conventions.html' target='PDM_conventions'>the PDM conventions</a> standard functions. It contains:
+            </div>
+            <ul style='display:block;max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 0 auto;'>
+				<li style='margin-left: 1.5em;'>A server-script: index.php</li>
+				<li style='margin-left: 1.5em;'>A client-page: client.html</li>
+				<li style='margin-left: 1.5em;'>A plugins directory: plugins</li>
+				<li style='margin-left: 1.5em;'>Optionally, a cache directory: cache</li>
+            </ul>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                The system is totally independant from the http server and as a consequence, it is possible to tweak your server to serve this page as default, after login, deal with security, etc...
+            </div>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                To maximize simplicity, code readability, etc... configuration is done by directly editing the server-script (php) and the client-page (html/javascript)
+            </div>
+            
+			<h3>Configure the server</h3>
+			<div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>To configure the server-script, open 'index.php', and edit the variables at the top of the file. Explainations are given in the file or are self-explonatory. Major settings are:</div>
+            <ul style='display:block;max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 0 auto;'>
+				<li style='margin-left: 1.5em;'><strong>Long polls - timeout</strong>: how long can the server hold an update request from the client (before a 503 gateaway or any other error closing the connection)</li>
+				<li style='margin-left: 1.5em;'><strong>Long polls - local polling frequency</strong>: when holding a long poll, how often should the system check for changes</li>
+            </ul>
+			<h3>Configure the client</h3>
+			<div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>To configure the client-page, open the 'client.html', and search for the keyword C'LIENTSETTINGS'. Explainations are given in the file or are self-explonatory. Major settings are:</div>
+            <ul style='display:block;max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 0 auto;'>
+                <li style='margin-left: 1.5em;'><strong>Polling policy</strong>: should it probe for update with background long polls, fixed-time polls or no polling at all (get updates on user actions only).</li>
+            </ul>
+            
+			<h3 id="integrate">Integrate - Plugins</h3>
+			<div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                This system relies on plugins to let users perform unconventional / rarely used actions (without cluttering the interface) and allow server-integration. Examples:
+            </div>
+            <ul style='display:block;max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 0 auto;'>
+				<li style='margin-left: 1.5em;'>view PDM documentation</li>
+				<li style='margin-left: 1.5em;'>show statistics</li>
+				<li style='margin-left: 1.5em;'>import emails from IMAP folder to INBOX</li>
+				<li style='margin-left: 1.5em;'>import files from FTP folder to INBOX (allows sharing from mobile device)</li>
+				<li style='margin-left: 1.5em;'>Cutomize icon, name</li>
+				<li style='margin-left: 1.5em;'>Manage server security settings</li>
+				<li style='margin-left: 1.5em;'>Manage server backups (with rsync for instance)</li>
+				<li style='margin-left: 1.5em;'>Batch rename ARCHIVES files (SUPER)</li>
+				<li style='margin-left: 1.5em;'>You name it...</li>
+            </ul>
+
+            <img src="PDM_technical_guide_plugins.png" alt="plugins" width="144" height="186" style="float:right;border:1px solid DarkSlateGray;">
+			
+			<div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                Plugins are basically in-a-folder-mini-websites inside the “plugins” folder:
+            </div>
+            <ul style='display:block;max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 0 auto;'>
+				<li style='margin-left: 1.5em;'>Plugins folders may have any name, however:
+                    <ul style='margin-top:0;'>
+                        <li>if the name starts with '.': the plugin is ignored.</li>
+                        <li>if the name starts with a number (with or without a trailing white space), it will help with ordering plugins, but the number will not be included in the cosmetical name.</li>
+                        <li>if the name ends with a '_', this trailing will not be included in the cosmetical name (used to identify plugins taylored to the user/system during update)</li>
+                    </ul>
+                </li>
+				<li style='margin-left: 1.5em;'>Plugins must have an ‘index.php’ file at their root
+                    <ul style='margin-top:0;'>
+                        <li>This file is the entry-point when the plugin is visited by the user</li>
+                    </ul>
+                </li>
+				<li style='margin-left: 1.5em;'>Plugins may have an ‘daemon.php’ php cli-style script at their root
+                    <ul style='margin-top:0;'>
+                        <li>this script will be executed at least once at the beggining of each user connexion to the main system, then any time the server-script check the system for updates (depends on polling policy of the client)</li>
+                        <li>this script must echo only "0" (string) on success and an error message (string) on failure.</li>
+                    </ul>
+                </li>
+				<li style='margin-left: 1.5em;'>Independance with other plugins:
+                    <ul style='margin-top:0;'>
+                        <li>plugins cannot relie on another plugin or on the system client-server API (it should re-implement it as needed)</li>
+                    </ul>
+                </li>
+				<li style='margin-left: 1.5em;'>Independance with the system:
+                    <ul style='margin-top:0;'>
+                        <li>Plugins should not rely on the system Client-Server API but re-implement it as needed.</li>
+                        <li>Plugins should cooperatively signify the system of any modification in the USER DATA by deleting the cache folder /system/cache IF it exists (check ABOUT CACHE in the server-script) or even regenerating the cache files if they now how it is done by the server-script.</li>
+                    </ul>
+                </li>
+            </ul>
+
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+            </div>
+            <!--****************************************************************************************************************-->
+            
+            <!--****************************************************************************************************************-->
+            <!--****************************************************************************************************************-->
+            <!--****************************************************************************************************************-->
+            <h2 style='max-width:800px;width:95%;min-width:300px;margin:2em auto 1em auto;' id="license">Author &amp; License</h2>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                Author: Benjamin PAPET-CHARBONNEL.
+                I started developping this software to improve my own digital hygiene.
+                After using it for months, I realised that it could also help others.
+                For this reason I decided to publish the code.
+                The code and user experience is based on the ‘KISS’ philosophy - it is design for absolute minimum maintenance and maximum robustness.
+               (<a target='_blank' href="https://edenuniverse.net/contact/">contact me</a>)
+            </div>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                This software contains all or portions of the code of the marked.js.org project for rendering Markdown: Copyright (c) 2011-2021, Christopher Jeffrey. (MIT Licensed). (<a target='_blank' href="https://marked.js.org/">https&#58;&#47;&#47;marked.js.org&#47;</a>)
+            </div>
+            <div style='max-width:800px;width:95%;min-width:300px;font-size:1em;margin:1em auto 1em auto;'>
+                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMTk2IiBoZWlnaHQ9IjE5NiI+CjxjaXJjbGUgY3g9Ijk4IiBjeT0iOTgiIHI9Ijk4IiBmaWxsPSIjODA4MDgwIi8+CjxjaXJjbGUgY3g9Ijk4IiBjeT0iOTgiIHI9Ijc4IiBmaWxsPSIjZmZmIi8+CjxjaXJjbGUgY3g9Ijk4IiBjeT0iOTgiIHI9IjU1IiBmaWxsPSIjODA4MDgwIi8+CjxjaXJjbGUgY3g9Ijk4IiBjeT0iOTgiIHI9IjMwIiBmaWxsPSIjZmZmIi8+CjxyZWN0IHdpZHRoPSIzMSIgaGVpZ2h0PSIyNSIgeD0iMTIzIiB5PSI4NSIgZmlsbD0iI2ZmZiIvPgo8cmVjdCB3aWR0aD0iMjAuNSIgaGVpZ2h0PSIxMDAiIHRyYW5zZm9ybT0ibWF0cml4KDEsMSwtMSwxLDEzNy43NSwzNy43NSkiIGZpbGw9IiNmZmYiLz4KPHJlY3Qgd2lkdGg9IjE3LjUiIGhlaWdodD0iMTIwIiB0cmFuc2Zvcm09Im1hdHJpeCgxLDEsLTEsMSwxNDkuMjUsMjkuMjUpIiBmaWxsPSIjODA4MDgwIi8+Cjwvc3ZnPg==" height='' width='' style="height:3em;width:3em;float: right;"/>
+                The rest of the code is free and unencumbered software released into the public domain. For more information, please refer to <a target='_blank' href="http://unlicense.org/">https&#58;&#47;&#47;unlicense.org&#47;</a>
+            </div>
+        <div id='close' style='max-width:800px;margin:3em auto;text-align:center;'><input type='button' style='width:50% ;display:inline;font-size:1em;height:3em;background-color:limeGreen;color:white;cursor:pointer;border:0;margin:2em auto;border-radius:0.2em;' value="Close" onclick="window.open('','_self').close();"/></div>
+    
+    </body>
+</html>
+

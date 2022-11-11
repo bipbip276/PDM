@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<title>Statistics</title>
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E📊%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>*{margin:auto;padding:0;width:100%;}</style>
+		<script>
+			window.onload=function(){
+                retrieve_ARCHIVES(
+                    function(){
+                        set_files_category();
+                        console.log(filesCategories_DB);
+                        fill_table_with_filesCategories_DB();
+                    }
+                );
+			}
+            var datePrefixLength=15;// how many characters should we remove from filename length to get the user's name length ("01234567891234 my name" => "my name")
+            var ARCHIVES=null;
+			var filesCategories_DB={
+                    '📝': {name:'text',icon:'📝',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '💻': {name:'code',icon:'💻',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '📄': {name:'document',icon:'📄',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '📧': {name:'message',icon:'📧',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '📦': {name:'archive',icon:'📦',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '👤': {name:'contact',icon:'👤',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '📆': {name:'event',icon:'👤',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '🔗': {name:'link',icon:'🔗',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '📷': {name:'image',icon:'📷',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '🎬': {name:'video',icon:'🎬',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '🎵': {name:'music',icon:'🎵',number:0,sizeTotal:0,averageSize:0,averageDate:0},
+                    '�': {name:'unknown',icon:'�',number:0,sizeTotal:0,averageSize:0,averageDate:0}
+			}
+            var filetypes_DB={
+                'txt':    {'category':'📝'},
+                'md':     {'category':'📝'},
+                'csv':    {'category':'📝'},
+
+                'php':    {'category':'💻'},
+                'conf':   {'category':'💻'},
+                'js':     {'category':'💻'},
+                'sh':     {'category':'💻'},
+                'c':      {'category':'💻'},
+                'h':      {'category':'💻'},
+                'py':     {'category':'💻'},
+                'json':     {'category':'💻'},
+
+                'html':   {'category':'📄'},
+                'mhtml':  {'category':'📄'},
+                'pdf':    {'category':'📄'},
+                'doc':    {'category':'📄'},
+                'docx':   {'category':'📄'},
+                'ppt':    {'category':'📄'},
+                'pptx':   {'category':'📄'},
+                'xls':    {'category':'📄'},
+                'xlsx':   {'category':'📄'},
+                'htm':    {'category':'📄'},
+                'html':   {'category':'📄'},
+                'ps':     {'category':'📄'},
+                'rtf':    {'category':'📄'},
+                'tex':    {'category':'📄'},
+                'sxw':    {'category':'📄'},
+                'odt':    {'category':'📄'},
+                'odf':    {'category':'📄'},
+                'ods':    {'category':'📄'},
+                'xlsm':   {'category':'📄'},
+
+                'eml':    {'category':'📧'},
+                'mbox':   {'category':'📧'},
+                'msg':    {'category':'📧'},
+                'pst':    {'category':'📧'},
+
+                'zip':    {'category':'📦'},
+                'iso':    {'category':'📦'},
+                'tar':    {'category':'📦'},
+                '7z':     {'category':'📦'},
+                'rar':    {'category':'📦'},
+                'gzip':   {'category':'📦'},
+                'bzip':   {'category':'📦'},
+                'gz':     {'category':'📦'},
+                'taz':    {'category':'📦'},
+                'bz2':    {'category':'📦'},
+                'xz':     {'category':'📦'},
+                'tgz':    {'category':'📦'},
+
+                'contact':{'category':'👤'},
+                'vcf':    {'category':'👤'},
+                'vcard':  {'category':'👤'},
+
+                'event':  {'category':'📆'},
+                'ical':   {'category':'📆'},
+                'xcal':   {'category':'📆'},
+                'hcal':   {'category':'📆'},
+                'vcal':   {'category':'📆'},
+                'ics':    {'category':'📆'},
+
+                'link':   {'category':'🔗'},
+                'url':    {'category':'🔗'},
+                'desktop':{'category':'🔗'},
+
+				'jpeg':   {'category':'📷'},
+                'jpg':    {'category':'📷'},
+                'gif':    {'category':'📷'},
+                'png':    {'category':'📷'},
+                'webp':   {'category':'📷'},
+                'svg':    {'category':'📷'},
+                'ppm':    {'category':'📷'},
+                'tiff':   {'category':'📷'},
+                'tif':    {'category':'📷'},
+                'bmp':    {'category':'📷'},
+
+                'mp4':    {'category':'🎬'},
+                'avi':    {'category':'🎬'},
+                'webm':   {'category':'🎬'},
+                'mpg':    {'category':'🎬'},
+                'mpeg':   {'category':'🎬'},
+                'wmv':    {'category':'🎬'},
+                'mkv':    {'category':'🎬'},
+                'flv':    {'category':'🎬'},
+                'vob':    {'category':'🎬'},
+                'ogv':    {'category':'🎬'},
+                'mov':    {'category':'🎬'},
+                'qt':     {'category':'🎬'},
+                'rm':     {'category':'🎬'},
+                'mp2':    {'category':'🎬'},
+                '3gp':    {'category':'🎬'},
+                '3g2':    {'category':'🎬'},
+                'f4v':    {'category':'🎬'},
+                'm4v':    {'category':'🎬'},
+                'ts':     {'category':'🎬'},
+
+                'mp3':    {'category':'🎵'},
+                'ogg':    {'category':'🎵'},
+                'wav':    {'category':'🎵'},
+                'flac':   {'category':'🎵'},
+                'aiff':   {'category':'🎵'},
+                'gsm':    {'category':'🎵'},
+                'aa':     {'category':'🎵'},
+                'aac':    {'category':'🎵'},
+                'aax':    {'category':'🎵'},
+                'mod':    {'category':'🎵'},
+                'xm':     {'category':'🎵'},
+
+                null:{'category':'�'}
+            };
+            var NBofFilesPastYear=0;
+            var filesDensityPastYear=0;
+            var averageReferenceLength=0;
+            var averageNameLength=0;
+            var headerSize=0;
+            var totalFileNumber=0;
+            var totalFileSize=0;
+            var averageFileSize=0;
+            var oldestDate=new Date();
+
+            function retrieve_ARCHIVES(callback){
+                if(callback===undefined){var callback=function(e){return false;}}
+                var req = new XMLHttpRequest();
+                var url='?action=getArchives';
+                req.open('GET',url, true);
+                req.onreadystatechange = function (){
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            headerSize=stringSize(req.responseText);
+                            try {
+                                var serverResponse=JSON.parse(req.responseText);
+                                ARCHIVES=serverResponse;
+                                console.log(serverResponse);
+                            }catch (e){
+                                ARCHIVES=[];
+                                alert('Error: '+ req.responseText);
+                                console.log(req.responseText);
+                            }
+                            callback();
+                        }else{if(req.status==0){alert('>--- timeout #1',updates);}else{alert('!--- HTML level Error (code '+req.status+')');}}
+                    }
+                }
+                req.send(null);
+			}
+            function set_files_category(){
+                var extension,n;
+                var totalReferenceLength=0;
+                var lastYearDate= new Date();lastYearDate.setFullYear(lastYearDate.getFullYear() -1);
+                for(var i=0; i < ARCHIVES.length; i++){
+					n=ARCHIVES[i].reference.lastIndexOf(".");
+					if(n==0){extension='';}
+					else{extension=ARCHIVES[i].reference.slice(n+1).toLowerCase();}
+					if (!filetypes_DB.hasOwnProperty(extension)){extension=null;}
+					ARCHIVES[i].category=filetypes_DB[extension].category;
+					filesCategories_DB[ARCHIVES[i].category].number++;
+					filesCategories_DB[ARCHIVES[i].category].sizeTotal=filesCategories_DB[ARCHIVES[i].category].sizeTotal+ARCHIVES[i].size;
+					//date
+                    ARCHIVES[i].date=new Date(parseInt(ARCHIVES[i].reference.slice(0,ARCHIVES[i].reference.indexOf(' '))));
+                    if(ARCHIVES[i].date <oldestDate){oldestDate=ARCHIVES[i].date;}
+                    if(ARCHIVES[i].date>=lastYearDate){NBofFilesPastYear++;}
+                    totalReferenceLength=totalReferenceLength+ARCHIVES[i].reference.length;
+                    totalFileSize=totalFileSize+ARCHIVES[i].size;
+                }
+                for (var item in filesCategories_DB) {
+                    if(filesCategories_DB[item].number!==0){filesCategories_DB[item].averageSize=Math.round(filesCategories_DB[item].sizeTotal/filesCategories_DB[item].number);}
+                    else{filesCategories_DB[item].averageSize=0;}
+                }
+                var NBofDaysPastYear=365;
+                filesDensityPastYear=NBofFilesPastYear/NBofDaysPastYear;
+                if(ARCHIVES.length!==0){
+                    averageReferenceLength=totalReferenceLength/ARCHIVES.length;
+                    averageFileSize=totalFileSize/ARCHIVES.length;
+                }else{
+                    verageReferenceLength=0;
+                    averageFileSize=totalFileSize=0;
+                }
+                totalFileNumber=ARCHIVES.length;
+            }
+            function fill_table_with_filesCategories_DB(){
+                var html='';
+                html=html+'<div style="font-size:1em;margin:1em auto 1em auto;border: 1px solid black;background-color:lightGrey;">';
+                html=html+'  <table id="statistics" style="width:100%;font-size:1em;border-collapse: separate;border-spacing: 0.5em 0.4em;table-layout: fixed;text-align:right;">';
+                html=html+'    <thead style="font-weight:bold;">';
+                html=html+'      <tr><td style="min-width: 5em;text-align:left">Category</td><td>Nb. of files</td><td>Average file size</td><td>Total size</td></tr>';
+                html=html+'</thead>';
+                html=html+' <tbody id="category_results">';
+                html=html+'</tbody>';
+                html=html+'<tbody>';
+                html=html+'<tr class="noBorder"><td colspan="4" >&nbsp;</td></tr>';
+                html=html+'<tbody>';
+                html=html+'</tbody>';
+                html=html+'<tr><td style="text-align:left" colspan="4">Oldest file: <span id="oldestFile"></span></td></tr>';
+                html=html+'<tr><td style="text-align:left" colspan="4">Number of files (past year): <span id="nbofpy"></span></td></tr>';
+                html=html+'<tr><td style="text-align:left" colspan="4">Files per day (past year): <span id="fdpy"></span></td></tr>';
+                html=html+'<tr><td style="text-align:left" colspan="4">Average reference length (with date): <span id="afrl"></span> characters</td></tr>';
+                html=html+'<tr><td style="text-align:left" colspan="4">Average name length (without date): <span id="afnl"></span> characters</td></tr>';
+                html=html+'<tr><td style="text-align:left" colspan="4">Archives headers size: <span id="ahs"></span></td></tr>';
+                html=html+'<tr><td style="text-align:left" colspan="4">Download headers with stats: <span style="color:#6600FF;cursor:pointer;" onclick="download_DB_json()">JSON</span>, <span style="color:#6600FF;cursor:pointer;" onclick="download_DB_csv()">CSV</span></td></tr>';
+                html=html+'</tbody>';
+                html=html+'</table>';
+                html=html+'</div>';
+                document.getElementById('content').innerHTML=html;
+                html='';
+                for (var category in filesCategories_DB) {
+                    if (filesCategories_DB.hasOwnProperty(category)) {
+                        html=html+'<tr>'+
+                        '<td style="text-align:left;">'+category+' '+filesCategories_DB[category].name+'</td>'+
+                        '<td>'+filesCategories_DB[category].number+'</td>'+
+                        '<td>'+bytes_to_humansize(filesCategories_DB[category].averageSize)+'</td>'+
+                        '<td>'+bytes_to_humansize(filesCategories_DB[category].sizeTotal)+'</td>'+
+                        '</tr>';
+                    }
+                }
+                html=html+'<tr style="font-weight:bold;">'+
+                '<td style="text-align:left">ALL</td>'+
+                '<td>'+totalFileNumber+'</td>'+
+                '<td>'+bytes_to_humansize(averageFileSize)+'</td>'+
+                '<td>'+bytes_to_humansize(totalFileSize)+'</td>'+
+                '</tr>';
+                document.getElementById('category_results').innerHTML=html;
+                document.getElementById('oldestFile').innerHTML=DATE_getHumanFormat(oldestDate);
+                document.getElementById('nbofpy').innerHTML=NBofFilesPastYear;
+                document.getElementById('fdpy').innerHTML=Math.round((filesDensityPastYear + Number.EPSILON) * 100) / 100;
+                document.getElementById('afrl').innerHTML=Math.round(averageReferenceLength);
+                document.getElementById('afnl').innerHTML=Math.max(0,Math.round(averageReferenceLength)-datePrefixLength);
+                document.getElementById('ahs').innerHTML=bytes_to_humansize(headerSize);
+            }
+            function download_DB_json(){
+                var element = document.createElement("a");
+                var dataBlob = new Blob([JSON.stringify(ARCHIVES)],{type:"text/plain"});
+                var objUrl = URL.createObjectURL(dataBlob);
+                element.href = objUrl;
+                element.setAttribute('download', 'DB_header.json');
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+                delete element;
+            }
+            function download_DB_csv(){
+                let csvDATA = '"REFERENCE","SIZE"'+ '\r\n';
+                for (let i = 0; i < ARCHIVES.length; i++) {csvDATA=csvDATA + '"'+ARCHIVES[i].reference+'","'+ARCHIVES[i].size+ '"\r\n';}
+                var element = document.createElement("a");
+                var dataBlob = new Blob([csvDATA],{type:"text/plain"});
+                var objUrl = URL.createObjectURL(dataBlob);
+                element.href = objUrl;
+                element.setAttribute('download', 'DB_header.csv');
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+                delete element;
+            }
+
+            //libs
+            function DATE_getHumanFormat(date){
+                if(date==undefined){date=new Date();}
+                var str=new Date(date.getTime()-(date.getTimezoneOffset()*60000)).toISOString();
+                return str.substr(0,str.indexOf('T'));
+            }
+            function bytes_to_humansize(size){
+                //note: filesize is in bytes
+                //note this function counts in SI units (not 1024)))
+                if(Math.abs(size) < 1000) {return size + ' B';}
+                var units = ['kB','MB','GB','TB','PB','EB','ZB','YB'];
+                var u = -1;
+                do {
+                    size /= 1000;
+                    ++u;
+                } while(Math.abs(size) >= 1000 && u < units.length - 1);
+				return  size.toFixed(1)+' '+units[u];
+			}
+            function stringSize(str){//returns the bit size of a string
+                return encodeURI(str).split(/%..|./).length - 1;
+            }
+            function PAGE_isMobile(){
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+		</script>
+    </head>
+    <body style='width:95%;min-width:300px;margin: auto;'>
+        <H1 style='max-width:800px;margin:3em auto 2em auto;'>📊 Statistics</H1>
+        <div style='max-width:800px;font-size:1em;margin:1em auto 1em auto;'>
+            This plugin displays statistics regarding archived files.
+        </div>
+        <div id='content' style='max-width:800px;margin:3em auto;'><span id='wait'><style onload="this.parentElement.className='wait';" type="text/css" scoped>.wait{animation: blinker 1s linear infinite;} @keyframes blinker {50% {opacity: 0;}}</style>Calculating, please wait...</span></div>
+        <div id='close' style='max-width:800px;margin:3em auto;text-align:center;'><input type='button' style='width:50% ;display:inline;font-size:1em;height:3em;background-color:limeGreen;color:white;cursor:pointer;border:0;margin:2em auto;border-radius:0.2em;' value="Close" onclick="window.open('','_self').close();"/></div>
+    </body>
+</html>

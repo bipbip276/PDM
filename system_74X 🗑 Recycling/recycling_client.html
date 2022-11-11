@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<title>Recycling</title>
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E🗑%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            #containter {}
+            #resultTable {border-collapse:collapse;/*margin: 50px auto;*/display:none;}
+            #resultTableHead {font-weight:bold;}
+            .referenceCell {width: 80em;}
+            .timeCell {width: 10em;}
+            .sizeCell {width: 5em;}
+        </style>
+		<script>
+			window.onload=function(){
+                document.body.style.cursor='wait';
+                animateWait('wait',10,100);
+                retrieve_recyclingData(
+                    function(recyclingData){
+                        fillHTMLTableBody(recyclingData);
+                        document.getElementById('wait').style.display='none';
+                        document.getElementById('resultTable').style.display='table';
+                        document.body.style.cursor='auto';
+                    }
+                );
+			}
+            var recyclingData=null;
+			function retrieve_recyclingData(callback){
+                if(callback===undefined){var callback=function(e){return false;}}
+                console.log('querying recycling data');
+                var req=new XMLHttpRequest();
+                req.open('GET','?action=getRecycling');
+                req.onerror=function(){alert('Error: '+req.status);}
+                req.onload=function(){
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            try {recyclingData=JSON.parse(req.responseText);} catch (e) {alert('Error from server response text is: '+req.responseText);}
+                            console.log('recyclingData is:', recyclingData);
+                            callback(recyclingData);
+                        }else{alert('Communication Error:'+req.status);}
+                    }
+                }
+                req.send();
+            }
+            function fillHTMLTableBody(recyclingData){
+                var i,file;
+                var html=''
+                for(i=0; i < recyclingData.length; i++){
+                    file=recyclingData[i];
+                    html='<tr><td class="referenceCell"><a href="'+FILE_getFileHref(file)+'" download="'+FILE_getFileReference(file)+'">'+FILE_getFileReference(file)+'</a></td><td class="timeCell">'+FILE_getFile_textTime(file)+'</td><td class="sizeCell">'+FILE_getFile_textSize(file)+'</td><td><button type="button" onclick="deleteFile('+i+')">delete</button></td></tr>'+html;
+                }
+                document.getElementById('resultTableBody').innerHTML=html;
+            }
+            function deleteFile(rank){
+                if(confirm("Delete file?")){
+                    document.getElementById('wait').style.display='block';
+                    document.getElementById('resultTable').style.display='none';
+                    document.body.style.cursor='wait';
+                    console.log('deleting file');
+                    var req=new XMLHttpRequest();
+                    req.open('GET','?action=deleteFile&filereference='+encodeURIComponent(recyclingData[rank].reference));
+                    req.onerror=function(){alert('Error: '+req.status);}
+                    req.onload=function(){
+                        if(req.readyState==4){
+                            if(req.status==200){
+                                if(req.responseText.substring(0,2).toLowerCase()=='ok'){location.reload();}
+                                else{alert(req.responseText);}
+                            }else{alert('Communication Error:'+req.status);}
+                        }
+                    }
+                    req.send();
+                }
+            }
+            function deleteALL(rank){
+               if(confirm("Delete ALL FILES?")){
+                    document.getElementById('wait').style.display='block';
+                    document.getElementById('resultTable').style.display='none';
+                    document.body.style.cursor='wait';
+                    console.log('deleting ALL ');
+                    var req=new XMLHttpRequest();
+                    req.open('GET','?action=deleteALL');
+                    req.onerror=function(){alert('Error: '+req.status);}
+                    req.onload=function(){
+                        if(req.readyState==4){
+                            if(req.status==200){
+                                if(req.responseText.substring(0,2)=='OK'){location.reload();}
+                                else{alert(req.responseText);}
+                            }else{alert('Communication Error:'+req.status);}
+                        }
+                    }
+                    req.send();
+                }
+            }
+
+
+            function humanReadableSize(size){// in 1000 
+                if(Math.abs(size) < 1000) {return size + ' B';}
+                var units = ['kB','MB','GB','TB','PB','EB','ZB','YB'];
+                var u = -1;
+                do {
+                    size /= 1000;
+                    ++u;
+                } while(Math.abs(size) >= 1000 && u < units.length - 1);
+                return size.toFixed(1)+' '+units[u];
+            }
+            function animateWait(id,length,duration){
+                if(length===undefined){var length=3;}
+                if(duration===undefined){var duration=100;}
+                var dots = window.setInterval( function() {
+                    var wait = document.getElementById(id);
+                    if ( wait.innerHTML.length > length )
+                        wait.innerHTML = "";
+                    else
+                        wait.innerHTML += ".";
+                }, duration);
+            }
+
+
+            function FILE_getFileReference(file){
+				return file.reference;
+			}
+			function FILE_getFileSize(file){
+				return file.size;
+			}
+			function FILE_getFileTime(file){
+				return file.time;
+			}
+			function FILE_getFileHref(file){
+				if(!file.hasOwnProperty('href')){
+				    //file.href='?action=SUPER_readRecycling&sourceReference='+encodeURIComponent(FILE_getFileReference(file));
+				    file.href='/OUT/'+encodeURIComponent(FILE_getFileReference(file));
+                }
+                return file.href;
+			}
+			function FILE_getFile_textSize(file){
+				if(!file.hasOwnProperty('textSize')){
+					//note: filesize is in bytes
+					//note this function counts in SI (1000 not 1024)
+					var size=FILE_getFileSize (file);
+                    if(size==2000000001){
+                        file.textSize= '>2GB';
+                    }
+                    else{
+                        if(Math.abs(size) < 1000) {return size + ' B';}
+                        var units = ['kB','MB','GB','TB','PB','EB','ZB','YB'];
+                        var u = -1;
+                        do {
+                            size /= 1000;
+                            ++u;
+                        } while(Math.abs(size) >= 1000 && u < units.length - 1);
+                        file.textSize= size.toFixed(1)+' '+units[u];
+                    }
+				}
+				return file.textSize;
+			}
+			function FILE_getFile_textTime(file){
+				if(!file.hasOwnProperty('textTime')){
+                    file.textTime=new Date((FILE_getFileTime(file)*1000)).toISOString().substring(0,16).replace('T',' ');
+				}
+				return file.textTime;
+			}
+        </script>
+    </head>
+    <body>
+        <h1>Recycle Bin</h1>
+		<div id='wait'>.</div>
+        <table id="resultTable">
+            <thead id="resultTableHead">
+                <tr><td>Reference</td><td>Deleted</td><td>Size</td><td><button type="button" onclick="deleteALL()">Delete ALL</button></td></tr>
+            </thead>
+            <tbody id="resultTableBody">
+            </tbody>
+        </table>
+   </h1>
+</html>

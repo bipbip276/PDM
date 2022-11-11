@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Import Emails</title>
+        <link rel="stylesheet" href="email_style.css" />
+        <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E📧%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+        <style>
+         td{height:1.5em;padding:0;margin:0;border-collapse:collapse;border:0;}
+        
+        </style>
+		<script>
+			window.onload=function (){
+                getSettings();
+			}
+            function getSettings(){
+				disable();
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=getSettings', true);
+                req.onreadystatechange = function(){
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            try {
+                                var settings=JSON.parse(req.responseText);
+								//fill HTML
+								document.getElementById('IMAP_server_address_input').value=settings['IMAP_server_address'];
+								document.getElementById('IMAP_server_port_input').value=settings['IMAP_server_port'];
+								document.getElementById('IMAP_server_protocol_input').checked=settings['IMAP_server_protocol'];
+								document.getElementById('IMAP_server_login_input').value=settings['IMAP_server_login'];
+								document.getElementById('IMAP_server_password_input').value=settings['IMAP_server_password'];
+								document.getElementById('IMAP_server_pathFrom_input').value=settings['IMAP_server_pathFrom'];
+								document.getElementById('IMAP_server_pathTo_input').value=settings['IMAP_server_pathTo'];
+								enable();
+                            }catch(e){alert('Error from server: see console');console.log('received: ',req.responseText);}
+                        }else{alert('!--- HTML level Error (code '+req.status+')');}
+                    }
+                }
+                req.send(null);
+            }
+            function checkSettings(){
+				disable();
+				var settings={};
+                settings.IMAP_server_address=document.getElementById('IMAP_server_address_input').value;
+                settings.IMAP_server_port=document.getElementById('IMAP_server_port_input').value;
+                settings.IMAP_server_protocol=document.getElementById('IMAP_server_protocol_input').checked;
+                settings.IMAP_server_login=document.getElementById('IMAP_server_login_input').value;
+                settings.IMAP_server_password=document.getElementById('IMAP_server_password_input').value;
+                settings.IMAP_server_pathFrom=document.getElementById('IMAP_server_pathFrom_input').value;
+                settings.IMAP_server_pathTo=document.getElementById('IMAP_server_pathTo_input').value;
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=checkSettings&settings='+encodeURIComponent(JSON.stringify(settings)), true);
+                req.onreadystatechange = function(){
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            try {
+                                var response=JSON.parse(req.responseText);
+                                if(response['error']===0){
+                                    alert(response['output']);
+                                    var save=confirm("Do you want to remember those settings?\n\nThis will archive it in your PDM System.");
+                                    if(save){
+                                        saveSettings();
+                                    }
+                                }else{
+                                    alert(response['error']);
+                                    console.log(response['error']);
+                                }
+                                enable();
+                            }catch(e){alert('Error from server: see console');console.log('received: ',req.responseText);}
+                        }else{alert('!--- HTML level Error (code '+req.status+')');}
+                    }
+                }
+                req.send(null);
+            }
+            function saveSettings(){
+				disable();
+				var settings={};
+                settings.IMAP_server_address=document.getElementById('IMAP_server_address_input').value;
+                settings.IMAP_server_port=document.getElementById('IMAP_server_port_input').value;
+                settings.IMAP_server_protocol=document.getElementById('IMAP_server_protocol_input').checked;
+                settings.IMAP_server_login=document.getElementById('IMAP_server_login_input').value;
+                settings.IMAP_server_password=document.getElementById('IMAP_server_password_input').value;
+                settings.IMAP_server_pathFrom=document.getElementById('IMAP_server_pathFrom_input').value;
+                settings.IMAP_server_pathTo=document.getElementById('IMAP_server_pathTo_input').value;
+                var req = new XMLHttpRequest();
+                req.open('GET','?action=saveSettings&settings='+encodeURIComponent(JSON.stringify(settings)), true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){
+							try{
+                                var response=JSON.parse(req.responseText);
+								alert(response);
+                                enable();
+                            }catch(e){alert('Error from server: see console');console.log('received: ',req.responseText);}
+                        }else{alert('!--- HTML level Error (code '+req.status+')');}
+                    }
+                }
+                req.send(null);
+            }
+			function downloadEmails(){
+				disable();
+				var settings={};
+                settings.IMAP_server_address=document.getElementById('IMAP_server_address_input').value;
+                settings.IMAP_server_port=document.getElementById('IMAP_server_port_input').value;
+                settings.IMAP_server_protocol=document.getElementById('IMAP_server_protocol_input').checked;
+                settings.IMAP_server_login=document.getElementById('IMAP_server_login_input').value;
+                settings.IMAP_server_password=document.getElementById('IMAP_server_password_input').value;
+                settings.IMAP_server_pathFrom=document.getElementById('IMAP_server_pathFrom_input').value;
+                settings.IMAP_server_pathTo=document.getElementById('IMAP_server_pathTo_input').value;
+                var req = new XMLHttpRequest(); 
+                req.open('GET','?action=downloadEmails&settings='+encodeURIComponent(JSON.stringify(settings)), true);
+                req.onreadystatechange = function () {
+                    if(req.readyState==4){
+                        if(req.status==200){
+                            try {
+                                var response=JSON.parse(req.responseText);
+                                document.getElementById('output').innerText=response['output'];
+                                enable();
+                            }catch(e){alert('Error from server: see console');console.log('received: ',req.responseText);}
+                        }else{alert('!--- HTML level Error (code '+req.status+')');}
+                    }
+                }
+                req.send(null);
+
+			}
+			function disable(){
+                document.body.style.cursor='wait';
+			}
+			function enable(){
+				document.body.style.cursor='';
+			}
+		</script>
+	</head>
+	<body class="stackedit">
+        <div class="stackedit__html">
+            <h1>📧 Emails</h1>
+            
+			<p>This PDM plugin let the user import emails from an IMAP server.</p>
+			<p>The <b>IMAP server parameters</b> (address, port, protocol, login and password) and the <b>folder from which you wish to download emails</b> must be filled in.</p>
+			<p>Optionally, it is possible to indicate a second folder to which the emails will be moved after the operation is complete. If this field is left empty, the downloaded emails will be deleted on the server.</p>
+			<p>The <b>&quot;Check &#47; Save Settings&quot; button</b> tests the IMAP server parameters and -if connected- shows the list of available folders.
+                This button will also offer the option to remember the settings, archiving it in your PDM personal data.
+            </p>
+
+           <table style="font-size:min(1em, 3vw);width:100%;border:1em solid lightGrey;padding:1em;background-color:lightGrey">
+                <tr>
+                    <td>IMAP Server Name: *</td>
+                    <td style="width:50%"><input id="IMAP_server_address_input" style="width:100%" type="text"/></td>
+                </tr>
+                <tr>
+                    <td>IMAP Server Port: *</td>
+                    <td><input id="IMAP_server_port_input" style="width:100%" type="number" /></td>
+                </tr>
+                <tr>
+                    <td>IMAP Server Protocol: *</td>
+                    <td><input id="IMAP_server_protocol_input" type="checkbox" style="width:1em"/> ssl</td>
+                </tr>
+                <tr>
+                    <td>IMAP Server Login: *</td>
+                    <td><input id="IMAP_server_login_input" style="width:100%" type="text" /></td>
+                </tr>
+                <tr>
+                    <td>IMAP Server Password: *</td>
+                    <td><input id="IMAP_server_password_input" style="width:100%" type="password" /></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>Download emails from folder: *</td>
+                    <td><input id="IMAP_server_pathFrom_input" style="width:100%" type="text" /></td>
+                </tr>
+                <tr>
+                    <td>Then move emails to folder:</td>
+                    <td><input id="IMAP_server_pathTo_input" style="width:100%" type="text" placeholder="None (delete emails)"/></td>
+                </tr>
+                <tr>
+                    <td colspan=2>
+                        <div style="text-align:center;padding:1em 0 0 0;"><input type="button" id="checkSettings" value="Check / Save Settings" onclick="checkSettings();" style="width:14em;height:3em;"/> </div>
+                    </td>
+                </tr>
+            </table>
+            
+						<div style="text-align:center;font-size:18px;cursor:pointer;color:white;background-color:LimeGreen;width:10em;height:3em;line-height:3em;margin:2em auto;border-radius:0.2em;;" onclick="downloadEmails()">
+							Download emails
+						</div>
+                        
+					<div id="output"  style="width: 100%;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;border:0"></div>
+
+
+
+
+		</div>
+	</body>
+</html>
