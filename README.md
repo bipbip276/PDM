@@ -2,11 +2,11 @@
 
 Personal Data Manager (PDM) is a personal digital vault to keep your files private, intact and accessible. ([website](https://edenuniverse.net/PDM/information.html))
 
-PDM allows you to host all your personnal data to keep your files in a single standard folder located on the server. Files can be added by drag-and-drop, 'shared' from a mobile device), uploaded over FTP, etc... depending on your server configuration. Uploaded files can then be viewed, edited, archived or set as reminders.
+PDM allows you to host all your personnal data to keep your files in a single standard folder located on the server. Depending on you system configuration, files can be added by drag-and-drop, 'shared' (from a mobile device), uploaded over FTP, etc…. Uploaded files can then be viewed, edited, archived or set as reminders.
 
 ## Install, Customize, Develop
 
-To install PDM: Download, uncompress, copy onto a linux + http/php server.
+To install PDM: Download, uncompress, copy onto a linux + http/php server. For testing, it can also directly run on php embedded http server.
 
 System configuration is done by editing directly the server file (php) and the client file (html/javascript). Plugins can be added/removed/modified to give the user server-level functionnalities (backup, password management, share from mobile devices, etc...).
 
